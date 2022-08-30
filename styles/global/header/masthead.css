@@ -1,0 +1,53 @@
+/*
+header{
+
+}
+******************************************************************************/
+
+header {
+    /* The image used */
+    background-image: url("../../../images/2015_19_0034_mashead.jpg");
+    /* Set a specific height */
+    height: 100%;
+    /* Position and center the image to scale nicely on all screens */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
+}
+
+#masthead {
+    display: grid;
+    grid-template-columns: auto;
+    grid-template-rows: auto;
+}
+
+#masthead>.heading {
+    grid-column-start: 2;
+    grid-column-end: 5;
+    grid-row-start: 2;
+    grid-row-end: 3;
+}
+
+header>h1 {
+    padding: 15px;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+/*
+Responsive layout - 
+******************************************************************************/
+
+@media (max-width: 600px) {
+    header {
+        /* The image used */
+        background-image: url("/images/2015_19_0034_mashead.jpg");
+        /* Set a specific height */
+        height: 100%;
+        /* Position and center the image to scale nicely on all screens */
+        background-position: left;
+        background-repeat: no-repeat;
+        background-size: auto;
+        position: relative;
+    }
+}

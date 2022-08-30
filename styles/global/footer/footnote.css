@@ -1,0 +1,24 @@
+/* 
+footer {
+
+} 
+******************************************************************************/
+footer {
+    font-size: 12px;
+    margin:  0 0 0 0;
+    padding: 0 0 0 0;
+} 
+#footnote {
+    display: grid;
+    grid-template-columns: repeat(12,auto);
+    grid-template-rows:repeat(3,auto);
+
+}
+
+#footnote>.legalese {
+    font-style: italic;
+    grid-column-start: 7;
+    grid-column-end: 12;
+    grid-row-start: 2;
+    grid-row-end: 3;
+}

@@ -1,0 +1,130 @@
+<html>
+
+<head>
+
+<title>ECS Sample Home Page</title>
+
+</head>
+
+<body>
+
+<center><h1>ECS Sample Home Page</h1></center>
+
+<hr>
+
+<p>
+<I><FONT SIZE="-1" COLOR="red">I take full responsibility
+for the information posted. The information on this page
+represents that of myself and not that of
+<A HREF="http://www.csus.edu">California State University,
+Sacramento</A> or the <A HREF="http://www.ecs.csus.edu">College of
+Engineering and Computer Science</A> 
+.</FONT></I>              
+<p>
+<center>
+<IMG SRC="construc.gif" ALT="[Under Construction!]" ALIGN=MIDDLE>
+<h2>Please check back later.</h2> 
+</center>
+
+<hr>
+
+<h3>
+The filename for this homepage is <i>index.html</i>.  It is located in the 
+directory "html" in your UNIX account.
+
+<p>
+
+Your <b>URL</b> is <i>http://gaia.ecs.csus.edu/~????????</i>
+
+<p>
+
+Replace the ???????? with your user ID.
+
+<p>
+
+CGI files can also be developed and executed from your account. The 
+<b>URL</b> to use when accessing your personal CGI files is <i>http://gaia.ecs.csus.edu/~????????</i>
+
+<p>
+
+Again, replace the ???????? with your user ID. Note: Any CGI
+files you create should have a name that ends with ".cgi" as the
+extension.
+
+<p>
+
+<p>
+
+Before you do any change to your homepage with an editor, please make a 
+copy by typing the following command:
+
+<p>
+
+<pre>
+        cp ~/html/index.html ~/html/backup
+</pre>
+
+</h3>
+
+<hr>
+
+<h4>Basic HTML programing</h4>
+
+A html document is composed of tags surrounding text, for example
+
+<pre>
+&lt;html&gt;     		[start of html file]
+&lt;head&gt;     		[start of head element]
+&lt;title&gt;...&lt;/title&gt;	[text that appears in the window color bar] 
+&lt;/head&gt;    		[end of head element]
+&lt;body&gt;     		[start of body of the document]
+...			[user optional tags and text goes here]
+&lt;/body&gt;    		[end tag of body]
+&lt;/html&gt;    		[end tag of html file]
+</pre>
+
+<h4>
+Examples of link and picture:
+</h4>
+
+Read the source and learn how to do it!!!
+
+<p>
+
+<a href="http://www.csus.edu">CSUS Homepage</a>
+
+<p>
+
+<img src="walk.jpg">
+
+<p>
+
+The name of this picture is <i>walk.jpg</i>.  (It uses 20k of your disk space)
+
+<p>
+
+Note:  Any pictures must allow read privilege for everyone.
+
+<br>
+
+For example:  chmod 644 walk.jpg
+
+<hr>
+
+<h3>
+If you want to learn more HTML details, here are some good online 
+sources.
+</h3>
+
+<ul>
+<li><a href="http://www.ncsa.uiuc.edu/General/Internet/WWW/HTMLPrimer.html">
+A Beginner's Guide to HTML</a> From NCSA. A good guide for beginners
+<li><a href="http://www.ecs.csus.edu/doc/quick.html">
+HTML Quick Reference</a> Help from School of E&CS
+<li><a href="http://home.netscape.com/assist/net_sites/">
+Creating Net Sites</a> Good resources about Netscape Extensions to HTML
+</ul>
+
+</body>
+
+</html>
