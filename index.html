@@ -14,17 +14,10 @@
     ></script>
   </head>
   <body>
-    <h1>Input</h1>
-    <input type="text" id="my_input" placeholder="Enter your name" />
-    <button type="button" id="my_button">Submit</button>
-    <p id="output"></p>
-    <script type="py">
-      from browser import document
-      @when("click", target="#submit")
-      def greet(event):
-          name = document["my_input"].value
-          document["output"].text = f"Hello, {name}!"
-          display("Hello, " + name + "!")
+    <script type="py" terminal>
+      # This is a Python script
+      print("Hello, world!")
+      display("Hello, world! (display)")
     </script>
   </body>
 </html>
