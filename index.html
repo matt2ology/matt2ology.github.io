@@ -1,96 +1,30 @@
 <!DOCTYPE html>
-<html lang="en-US">
+<html>
   <head>
-    <title>SacState:Matt:CSC 196W-02</title>
-    <link rel="stylesheet" type="text/css" href="styles/global/style.css" />
-    <meta charset="utf-8" />
+    <title>Input</title>
+    <!-- PyScript CSS -->
+    <link
+      rel="stylesheet"
+      href="https://pyscript.net/releases/2024.1.1/core.css"
+    />
+    <!-- This script tag bootstraps PyScript -->
+    <script
+      type="module"
+      src="https://pyscript.net/releases/2024.1.1/core.js"
+    ></script>
   </head>
-
   <body>
-    <div id="container">
-      <header id="masthead">
-        <h1 class="heading">Welcome to My CSC 196W Project Page</h1>
-      </header>
-      <nav id="menu">
-        <ul>
-          <a href="index.html" class="active">HOME</a>
-          <a href="fancifymytext.html">Assignment 5 - Fun with JavaScript</a>
-        </ul>
-      </nav>
-      <main>
-        <section>
-          <td>
-            <script src="scripts/timelyGreetings.js"></script>
-            <dd>Here you'll find my work done for CSC 196W</dd>
-          </td>
-        </section>
-        <!--Greetings and intro-->
-        <section>
-          <h2>What I'm Doing Now</h2>
-          <p>
-            I'm Sac-State student, majoring in Computer Science, I try to live a
-            balanced work and school life. This is what I spend my time doing:
-          </p>
-          <ul>
-            <li>Reading</li>
-            <ul>
-              <li>
-                <strong>Currently: </strong>
-                <a
-                  href="https://www.amazon.com/Missing-README-Guide-Software-Engineer/dp/1718501838"
-                  target="_blank"
-                  >The Missing README: A Guide for the New Software Engineer</a
-                >
-                <ul>
-                  <li>ISBN-13: 978-1718501836</li>
-                </ul>
-              </li>
-            </ul>
-            <li>Improving my photography and coding skills</li>
-            <li>
-              Trying to become Hokage someday
-              <img
-                src="images/gifs/naruto-running.gif"
-                alt="Naruto running sprite"
-                style="width: 25px; height: 25px"
-              />
-            </li>
-          </ul>
-        </section>
-        <!-- What I’m Doing Now -->
-        <section>
-          <h2>These are my main priorities right now</h2>
-          <p>
-            I am open to considering new opportunities, while attending Sac
-            State and afterwards, for I am always looking to learn and develop a
-            better perspective of new things. I aspire to stick to my priorities
-            90% of the time, as a result; I will say no to the majority of
-            requests that come my way now. If my activities or priorities happen
-            to change, I'll update this page to reflect those changes. Inspired
-            by
-            <a href="https://sivers.org/now" target="_blank">Derek Sivers</a>,
-            <a href="https://collegeinfogeek.com" target="_blank"
-              >Thomas Frank</a
-            >, and
-            <a href="https://salferrarello.com/about/" target="_blank"
-              >Sal Ferrarello</a
-            >, this page is a public declaration and a reminder to myself that
-            goals only become meaningful if work is put into its completion.
-          </p>
-        </section>
-        <!-- main priorities -->
-      </main>
-      <aside>matt2ology</aside>
-      <footer id="footnote">
-        <div class="legalese">
-          <div>
-            I take full responsibility for the information posted. The
-            information on this page represents that of myself <br />
-            and not that of California State University, Sacramento or the
-            College of Engineering and Computer Science.
-          </div>
-        </div>
-      </footer>
-    </div>
+    <h1>Input</h1>
+    <input type="text" id="my_input" placeholder="Enter your name" />
+    <button type="button" id="my_button">Submit</button>
+    <p id="output"></p>
+    <script type="py">
+      from browser import document
+      @when("click", target="#submit")
+      def greet(event):
+          name = document["my_input"].value
+          document["output"].text = f"Hello, {name}!"
+          display("Hello, " + name + "!")
+    </script>
   </body>
 </html>
