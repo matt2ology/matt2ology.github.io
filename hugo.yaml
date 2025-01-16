@@ -9,6 +9,10 @@ module:
       source: content
       target: content
 
+permalinks:
+  post: /p/:slug/
+  page: /:slug/
+
 # Site config - <https://stack.jimmycai.com/config/>
 # <https://github.com/CaiJimmy/hugo-theme-stack/blob/087989e4274f24a472d16d7c35d394a227fed47a/config.yaml#L4>
 params:
@@ -43,5 +47,73 @@ params:
     # Display toggle
     toggle: true
 
-    # Available values: auto, light, dark
-    default: auto
+  # Available values: auto, light, dark
+  default: auto
+  widgets:
+    homepage:
+      - type: search
+      - type: archives
+        params:
+          limit: 5
+      - type: categories
+        params:
+          limit: 10
+      - type: tag-cloud
+        params:
+          limit: 10
+    page:
+      - type: toc
+
+### Custom menu
+### See https://stack.jimmycai.com/config/menu
+### To remove about, archive and search page menu item, remove `menu` field from their FrontMatter
+menu:
+  main: []
+
+  social:
+    - identifier: github
+      name: GitHub
+      url: https://github.com/matt2ology
+      params:
+        icon: brand-github
+
+related:
+  includeNewer: true
+  threshold: 60
+  toLower: false
+  indices:
+    - name: tags
+      weight: 100
+
+    - name: categories
+      weight: 200
+
+markup:
+  goldmark:
+    extensions:
+      passthrough:
+        enable: true
+        delimiters:
+          block:
+            - - \[
+              - \]
+            - - $$
+              - $$
+          inline:
+            - - \(
+              - \)
+    renderer:
+      ## Set to true if you have HTML content inside Markdown
+      unsafe: true
+  tableOfContents:
+    endLevel: 4
+    ordered: true
+    startLevel: 2
+  highlight:
+    noClasses: false
+    codeFences: true
+    guessSyntax: true
+    lineNoStart: 1
+    lineNos: true
+    lineNumbersInTable: true
+    tabWidth: 4
