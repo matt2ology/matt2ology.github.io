@@ -1,6 +1,7 @@
 baseURL: https://matt2ology.github.io/
 languageCode: en-us
 title: Tech Journal and Blog
+theme: hugo-theme-stack
 
 module:
   mounts:
