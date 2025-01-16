@@ -20,7 +20,7 @@ params:
   favicon:
   # <https://stack.jimmycai.com/config/footer>
   footer:
-    since: 2024
+    since: 1900
     customText: EOF
   # <https://stack.jimmycai.com/config/color-scheme>
   colorScheme:
