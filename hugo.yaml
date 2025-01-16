@@ -11,24 +11,22 @@ module:
 
 # Site config - <https://stack.jimmycai.com/config/>
 # <https://github.com/CaiJimmy/hugo-theme-stack/blob/087989e4274f24a472d16d7c35d394a227fed47a/config.yaml#L4>
-
-# Site-wide settings
 params:
-    mainSections:
-        - post
-    featuredImageField: image
-    rssFullContent: true
-    favicon:
+  mainSections:
+    - post
+  featuredImageField: image
+  rssFullContent: true
+  favicon:
 
   # <https://stack.jimmycai.com/config/footer>
   footer:
     since: 1900
     customText: EOF
 
-    # <https://stack.jimmycai.com/config/color-scheme>
-    colorScheme:
-      # Display toggle
-      toggle: true
+  # <https://stack.jimmycai.com/config/color-scheme>
+  colorScheme:
+    # Display toggle
+    toggle: true
 
-      # Available values: auto, light, dark
-      default: auto
+    # Available values: auto, light, dark
+    default: dark
