@@ -9,6 +9,10 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+  # Runs every 14 days on a schedule (cron expression)
+  schedule:
+    - cron: "0 0 */14 * *" # Every 14 days at midnight UTC
+
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
