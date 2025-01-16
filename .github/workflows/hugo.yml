@@ -46,7 +46,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: recursive # Ensures submodules are cloned recursively
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
