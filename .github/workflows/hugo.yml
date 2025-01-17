@@ -2,9 +2,10 @@
 name: Deploy Hugo site to Pages
 
 on:
-  # Runs on pushes targeting the default branch
-  push:
-    branches: ["main"]
+  workflow_run:
+    workflows: ["Update Submodule Reference"]  # Name of Workflow 1
+    types:
+      - completed  # This ensures the dependent workflow runs after Workflow 1 completes
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
