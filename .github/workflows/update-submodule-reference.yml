@@ -1,0 +1,53 @@
+name: Update Submodule Reference
+
+on:
+  push:
+    paths:
+      - "content" # Trigger only when submodule files are updated
+  workflow_dispatch: # Allow manual triggering of the workflow
+  schedule:
+    - cron: "0 12 * * FRI" # Run every Friday at 12:00 UTC
+
+jobs:
+  update-submodule:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Main Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive # Fetch submodules as well
+      - name: Debug Checkout
+        run: |
+          echo "Checked out the main repository."
+          echo "Current directory: $(pwd)"
+          echo "Contents:"
+          ls -la
+          echo "Submodules fetched successfully."
+
+      - name: Update Submodule
+        run: |
+          echo "Navigating to the submodule directory."
+          cd path/to/submodule
+          echo "Current directory: $(pwd)"
+          echo "Pulling latest changes for the submodule."
+          git pull origin main # Replace 'main' with the branch you want to pull
+          echo "Submodule updated. Returning to the main repo."
+          cd -
+          echo "Adding updated submodule to the staging area."
+          git add path/to/submodule
+          echo "Creating a commit to update the submodule reference."
+          git commit -m "Update submodule to latest commit"
+
+      - name: Debug Commit
+        run: |
+          echo "Commit created. Verifying commit status."
+          git log -1
+          git status
+
+      - name: Push Changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Pushing changes to the repository."
+          git push origin HEAD
