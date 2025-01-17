@@ -47,32 +47,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive # Ensures submodules are cloned recursively
-      - name: Configure Git User for GitHub Actions Bot
-        run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-      - name: Update Submodule
-        run: |
-          cd content
-          git pull --rebase origin main || {
-            echo "Conflict detected. Resolving conflicts by favoring remote changes."
-            git checkout --theirs .
-            git add .
-            git rebase --continue || echo "Rebase completed with conflict resolution."
-          }
-          echo "Submodule updated successfully. Returning to the main repo."
-          cd -
-      - name: Debug Commit
-        run: |
-          echo "Commit created. Verifying commit status."
-          git log -1
-          git status
-      - name: Push Changes
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAGES_TECH_JOURNAL_BLOG }} # Use the personal access token instead of the default GITHUB_TOKEN
-        run: |
-          echo "Pushing changes to the repository."
-          git push origin HEAD
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
