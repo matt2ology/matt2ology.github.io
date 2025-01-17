@@ -30,14 +30,10 @@ jobs:
           echo "Navigating to the submodule directory."
           cd content
           echo "Current directory: $(pwd)"
-          echo "Pulling latest changes for the submodule."
-          git pull origin main # Replace 'main' with the branch you want to pull
+          echo "Pulling latest changes for the submodule with rebase."
+          git pull --rebase origin main
           echo "Submodule updated. Returning to the main repo."
           cd -
-          echo "Adding updated submodule to the staging area."
-          git add content
-          echo "Creating a commit to update the submodule reference."
-          git commit -m "Update submodule to latest commit"
 
       - name: Debug Commit
         run: |
