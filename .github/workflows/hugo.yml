@@ -2,6 +2,13 @@
 name: Deploy Hugo site to Pages
 
 on:
+  # Trigger on completion of the "Update Submodule Reference" workflow
+  workflow_run:
+    workflows:
+      - Update Submodule Reference
+    types:
+      - completed
+
   # Runs on pushes targeting the default branch
   push:
     branches: ["main"]
