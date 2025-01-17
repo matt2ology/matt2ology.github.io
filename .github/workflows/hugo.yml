@@ -9,11 +9,7 @@ on:
     types:
       - completed
 
-  # Runs on pushes targeting the default branch
-  push:
-    branches: ["main"]
-
-  # Allows you to run this workflow manually from the Actions tab
+  # Allows manual workflow triggering from the Actions tab
   workflow_dispatch:
 
   # Runs every 14 days on a schedule (cron expression)
