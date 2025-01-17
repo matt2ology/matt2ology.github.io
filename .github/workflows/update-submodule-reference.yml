@@ -3,12 +3,10 @@ name: Update Submodule Reference
 on:
   push:
     paths:
-      - "content" # Trigger only when submodule files are updated
-  # Runs on pushes targeting the default branch
-  push:
-    branches: ["main"]
-  # Allows manual workflow triggering from the Actions tab
-  workflow_dispatch:
+      - "content/**" # Trigger only when submodule files are updated
+    branches:
+      - "main" # Runs on pushes targeting the default branch
+  workflow_dispatch: # Allows manual workflow triggering from the Actions tab
   schedule:
     - cron: "0 12 * * FRI" # Run every Friday at 12:00 UTC
 
