@@ -34,6 +34,10 @@ jobs:
           # Go back to the main repository
           cd -
 
+          # Configure Git identity for the commit
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com" 
+
           # Stage the submodule update
           git add ./content/
 
