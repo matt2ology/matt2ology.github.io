@@ -47,6 +47,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive # Ensures submodules are cloned recursively
+      - name: Update Submodule
+        run: |
+          cd content
+          git pull --rebase origin main || {
+            echo "Conflict detected. Resolving conflicts by favoring remote changes."
+            git checkout --theirs .
+            git add .
+            git rebase --continue || echo "Rebase completed with conflict resolution."
+          }
+          echo "Submodule updated successfully. Returning to the main repo."
+          cd -
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
