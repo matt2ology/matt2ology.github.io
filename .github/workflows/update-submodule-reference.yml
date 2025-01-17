@@ -31,8 +31,13 @@ jobs:
           cd content
           echo "Current directory: $(pwd)"
           echo "Pulling latest changes for the submodule with rebase."
-          git pull --rebase origin main
-          echo "Submodule updated. Returning to the main repo."
+          git pull --rebase origin main || {
+            echo "Conflict detected. Resolving conflicts by favoring remote changes."
+            git checkout --theirs .
+            git add .
+            git rebase --continue || echo "Rebase completed with conflict resolution."
+          }
+          echo "Submodule updated successfully. Returning to the main repo."
           cd -
 
       - name: Debug Commit
