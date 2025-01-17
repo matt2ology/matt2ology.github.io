@@ -65,7 +65,7 @@ jobs:
           git status
       - name: Push Changes
         env:
-          GITHUB_TOKEN: ${{ secrets.TECH_JOURNAL_AND_BLOG_TOKEN }} # Use the personal access token instead of the default GITHUB_TOKEN
+          GITHUB_TOKEN: ${{ secrets.GH_PAGES_TECH_JOURNAL_BLOG }} # Use the personal access token instead of the default GITHUB_TOKEN
         run: |
           echo "Pushing changes to the repository."
           git push origin HEAD
