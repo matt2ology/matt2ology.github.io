@@ -4,7 +4,11 @@ on:
   push:
     paths:
       - "content" # Trigger only when submodule files are updated
-  workflow_dispatch: # Allow manual triggering of the workflow
+  # Runs on pushes targeting the default branch
+  push:
+    branches: ["main"]
+  # Allows manual workflow triggering from the Actions tab
+  workflow_dispatch:
   schedule:
     - cron: "0 12 * * FRI" # Run every Friday at 12:00 UTC
 
