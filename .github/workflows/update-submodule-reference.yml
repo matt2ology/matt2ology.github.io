@@ -3,8 +3,10 @@ name: Update Submodule Reference
 on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+
+  # Runs every 14 days on a schedule (cron expression)
   schedule:
-    - cron: "0 3 * * *" # Run every day at 3 AM UTC
+    - cron: "0 0 */14 * *" # Every 14 days at midnight UTC
 
 jobs:
   update-submodule:
