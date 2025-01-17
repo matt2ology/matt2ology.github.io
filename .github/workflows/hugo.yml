@@ -3,7 +3,7 @@ name: Deploy Hugo site to Pages
 
 on:
   workflow_run:
-    workflows: ["Update Submodule Reference"]  # Name of Workflow 1
+    workflows: ["Update Submodule Reference"]
     types:
       - completed  # This ensures the dependent workflow runs after Workflow 1 completes
 
