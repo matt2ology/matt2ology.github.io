@@ -58,6 +58,11 @@ jobs:
           }
           echo "Submodule updated successfully. Returning to the main repo."
           cd -
+      - name: Debug Commit
+        run: |
+          echo "Commit created. Verifying commit status."
+          git log -1
+          git status
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
