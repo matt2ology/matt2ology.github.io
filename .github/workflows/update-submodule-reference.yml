@@ -34,28 +34,18 @@ jobs:
           # Go back to the main repository
           cd -
 
-          # Configure Git identity for the commit
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com" 
-
-          # Stage the submodule update
-          git add ./content/
-
-          # Commit the submodule reference update
-          git commit -m "Resolved submodule merge conflict by accepting incoming changes"
-
-          # Push the changes
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAGES_TECH_JOURNAL_BLOG }}
-
-      # Check if there are any changes in the submodule reference
-      - name: Check for changes and push
+      - name: Configure Git identity for the commit
         run: |
-          if ! git diff --quiet; then
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Check for submodule reference changes
+        run: |
+          git diff ./content/
+          if ! git diff --quiet ./content/; then
             echo "Submodule reference updated."
-            git add .
-            git commit -m "Updated submodule reference"
+            git add ./content/
+            git commit -m "Resolved submodule merge conflict by accepting incoming changes"
             git push
           else
             echo "No changes in submodule reference."
