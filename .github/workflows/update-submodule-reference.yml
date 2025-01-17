@@ -23,7 +23,7 @@ jobs:
       # Forcefully update the submodule and resolve conflicts by resetting
       - name: Update submodule and resolve merge conflicts
         run: |
-          cd .\content\
+          cd ./content/
 
           # Fetch the latest changes from the submodule's remote
           git fetch origin
@@ -35,7 +35,7 @@ jobs:
           cd -
 
           # Stage the submodule update
-          git add .\content\
+          git add ./content/
 
           # Commit the submodule reference update
           git commit -m "Resolved submodule merge conflict by accepting incoming changes"
