@@ -47,7 +47,7 @@ jobs:
 
       - name: Push Changes
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TECH_JOURNAL_AND_BLOG_TOKEN }}
         run: |
           echo "Pushing changes to the repository."
           git push origin HEAD
