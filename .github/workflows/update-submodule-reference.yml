@@ -14,19 +14,39 @@ jobs:
       contents: write # Required to push changes to the repository
 
     steps:
-      # Checkout the repository
+      # Checkout the repository, including submodules
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           submodules: "true" # Ensure submodules are checked out
 
-      # Update the submodule to the latest commit
-      - name: Update submodule
+      # Forcefully update the submodule and resolve conflicts by resetting
+      - name: Update submodule and resolve merge conflicts
         run: |
-          git submodule update --remote --merge
+          cd path/to/submodule
+
+          # Fetch the latest changes from the submodule's remote
+          git fetch origin
+
+          # Force reset the submodule to the latest commit (use 'main' or your desired branch)
+          git reset --hard origin/main  # Adjust 'main' to the correct branch name
+
+          # Go back to the main repository
+          cd /path/to/your/repository
+
+          # Stage the submodule update
+          git add path/to/submodule
+
+          # Commit the submodule reference update
+          git commit -m "Resolved submodule merge conflict by accepting incoming changes"
+
+          # Push the changes
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAGES_TECH_JOURNAL_BLOG }}
 
       # Check if there are any changes in the submodule reference
-      - name: Check for changes
+      - name: Check for changes and push
         run: |
           if ! git diff --quiet; then
             echo "Submodule reference updated."
