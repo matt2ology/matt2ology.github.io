@@ -23,7 +23,7 @@ jobs:
       # Forcefully update the submodule and resolve conflicts by resetting
       - name: Update submodule and resolve merge conflicts
         run: |
-          cd path/to/submodule
+          cd .\content\
 
           # Fetch the latest changes from the submodule's remote
           git fetch origin
@@ -32,10 +32,10 @@ jobs:
           git reset --hard origin/main  # Adjust 'main' to the correct branch name
 
           # Go back to the main repository
-          cd /path/to/your/repository
+          cd -
 
           # Stage the submodule update
-          git add path/to/submodule
+          git add .\content\
 
           # Commit the submodule reference update
           git commit -m "Resolved submodule merge conflict by accepting incoming changes"
