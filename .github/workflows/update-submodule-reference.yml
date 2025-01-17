@@ -2,8 +2,7 @@ name: Update Submodule Reference
 
 on:
   push:
-    branches:
-      - "main" # Runs on pushes targeting the default branch
+    branches: ["main"] # Runs on pushes targeting the default branch
     paths:
       - "content/**" # Trigger only when submodule files are updated
   workflow_dispatch: # Allows manual workflow triggering from the Actions tab
