@@ -48,7 +48,7 @@ params:
   # <https://stack.jimmycai.com/config/footer>
   footer:
     since: 2024
-    customText: "Inspired by [Derek Sivers](https://sive.rs/now), [Thomas Frank](https://collegeinfogeek.com/), and [Sal Ferrarello](https://salferrarello.com/about/), this page is a public declaration and a reminder to myself that goals only become meaningful if work is put into its completion."
+    customText: Inspired by [Derek Sivers](https://sive.rs/now), [Thomas Frank](https://collegeinfogeek.com/), and [Sal Ferrarello](https://salferrarello.com/about/), this page is a public declaration and a reminder to myself that goals only become meaningful if work is put into its completion.
 
   # <https://stack.jimmycai.com/config/color-scheme>
   colorScheme:
