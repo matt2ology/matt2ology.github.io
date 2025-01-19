@@ -47,7 +47,7 @@ params:
 
   # <https://stack.jimmycai.com/config/footer>
   footer:
-    since: 1900
+    since: 2024
     customText: EOF
 
   # <https://stack.jimmycai.com/config/color-scheme>
