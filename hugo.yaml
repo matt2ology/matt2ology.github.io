@@ -9,6 +9,13 @@ module:
       source: content
       target: content
 
+taxonomies:
+  author: authors
+  category: categories
+  note: notes
+  tag: tags
+  medium: media
+
 permalinks:
   post: /p/:slug/
   page: /:slug/
