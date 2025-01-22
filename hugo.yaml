@@ -17,7 +17,12 @@ taxonomies:
   medium: media
 
 permalinks:
+  # If no slug key is provided in YAML front matter, Hugo derives the slug from the filename.
+  # URLs for posts are set under the "/p/" prefix, using the slug (e.g., /p/my-first-post/).
+  # Flexible: You can move or reorganize files in 'content/post/' without breaking links, as the URL is based on the slug.
   post: /p/:slug/
+  # URLs for pages are root-level, using the slug (e.g., /about/).
+  # Flexible: File reorganization in the 'content/' folder won't affect URLs.
   page: /:slug/
 
 # Site config - <https://stack.jimmycai.com/config/>
