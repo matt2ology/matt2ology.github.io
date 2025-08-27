@@ -1,0 +1,9 @@
+baseURL = 'https://matt2ology.github.io/'
+languageCode = 'en-us'
+title = 'matt2ology Tech Journal and Blog'
+
+[module]
+  [[module.mounts]]
+    source = "content"
+    target = "content"
+    excludeFiles = ["templates/*"]
