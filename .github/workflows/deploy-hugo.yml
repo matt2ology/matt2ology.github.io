@@ -31,12 +31,15 @@ jobs:
           git submodule update --remote --merge
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          NOTES_SHA=${{ github.event.client_payload.source_sha }}
+          SHORT_SHA=$(echo "$NOTES_SHA" | cut -c1-7)
           git add content
           if git diff --cached --quiet; then
             echo "No submodule changes to commit"
           else
             echo "Submodule changes detected. Committing..."
-            git commit -m "chore: sync content from notes repo"
+            git commit -m "chore: sync content from notes repo (notes@${SHORT_SHA})" \
+                  -m "Triggered by notes repo commit ${NOTES_SHA}"
             git push origin HEAD:main
             echo "Changes pushed to main branch"
           fi
