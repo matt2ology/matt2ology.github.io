@@ -1,0 +1,4 @@
+[submodule "content"]
+	path = content
+	url = git@github.com:matt2ology/tech-journal-and-blog.git
+	branch = main
