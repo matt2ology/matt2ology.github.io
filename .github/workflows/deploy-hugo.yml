@@ -1,0 +1,84 @@
+name: Build and Deploy Hugo Site
+
+on:
+  workflow_dispatch: # Manual trigger
+  repository_dispatch: # Triggered from another repo (e.g., notes)
+    types: [sync-from-notes]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+env:
+  HUGO_CACHEDIR: /tmp/hugo_cache # Predictable path for Hugo module caching
+
+jobs:
+  build-hugo-site:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout site repo (with submodules)
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          submodules: recursive
+          token: ${{ secrets.TECH_BLOG_TO_HUGO_PAT }}
+
+      - name: Update submodules
+        run: |
+          git submodule update --remote --merge
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add content
+          if git diff --cached --quiet; then
+            echo "No submodule changes to commit"
+          else
+            echo "Submodule changes detected. Committing..."
+            git commit -m "chore: sync content from notes repo"
+            git push origin HEAD:main
+            echo "Changes pushed to main branch"
+          fi
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: "latest"
+          extended: true
+
+      - name: Verify Hugo version
+        run: hugo version
+
+      # Idea taken from https://github.com/marketplace/actions/hugo-setup
+      - uses: actions/cache@v4
+        with:
+          path: ${{ env.HUGO_CACHEDIR }} # <- Use the same env variable just right here
+          key: ${{ runner.os }}-hugomod-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-hugomod-
+
+      - uses: actions/cache@v4
+        with:
+          path: resources
+          key: ${{ runner.os }}-hugoresources-${{ github.ref }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-hugoresources-
+
+      - name: Build Hugo site
+        run: hugo --gc --minify
+
+      - name: Upload artifact for GitHub Pages
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./public
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build-hugo-site
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
