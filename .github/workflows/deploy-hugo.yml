@@ -18,12 +18,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout the site repo (including submodules)
       - name: Checkout site repo (with submodules)
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
           submodules: recursive
-          token: ${{ secrets.TECH_BLOG_TO_HUGO_PAT }}
+          ssh-key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
 
       - name: Update submodules
         run: |
