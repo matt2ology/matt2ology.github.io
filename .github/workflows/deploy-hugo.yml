@@ -26,6 +26,11 @@ jobs:
           submodules: true
           token: ${{ secrets.TECH_JOURNAL_AND_BLOG_PAT }}
 
+      - name: Rewrite .gitmodules with HTTPS + token
+        run: |
+          sed -i "s|git@github.com:|https://x-access-token:${{ secrets.TECH_JOURNAL_AND_BLOG_PAT }}@github.com/|g" .gitmodules
+          cat .gitmodules
+
       - name: Update submodules
         run: |
           git submodule update --remote --merge
