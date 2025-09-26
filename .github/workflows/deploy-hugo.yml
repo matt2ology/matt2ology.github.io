@@ -33,7 +33,8 @@ jobs:
 
       - name: Update submodules
         run: |
-          git submodule update --remote --merge
+          git submodule sync --recursive
+          git submodule update --init --force --recursive --remote --merge
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           NOTES_SHA=${{ github.event.client_payload.source_sha }}
