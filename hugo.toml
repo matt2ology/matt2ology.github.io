@@ -3,3 +3,4 @@ languageCode = 'en-us'
 title = 'matt2ology Tech Journal and Blog'
 theme = 'hugo-theme-stack'
 mainSections = ['atomic', 'blog', 'journal', 'literature', 'references']
+ignoreFiles = ["content/templates/.*"]
