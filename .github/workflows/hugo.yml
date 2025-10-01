@@ -74,7 +74,7 @@ jobs:
             sed -i -E 's/\[\[([^\|]+)\|([^\]]+)\]\]/[\2]({{< relref "\L\1.md" >}})/g' "$file"
 
             # Convert [text](file.md) → [text]({{< relref "file.md" >}})
-            sed -i -E 's/\[([^\]]+)\]\(([^)]+)\.md\)/[\1]({{< relref "\2.md" >}})/g' "$file"
+            sed -E 's/\[([^\]]+)\]\(([^\)]+)\.md\)/[\1]({{< relref "\2" >}})/g' "$file"
 
             # Convert [[Page Name#Anchor]] → [Anchor]({{< relref "page name.md#anchor" >}})
             sed -i -E 's/\[\[([^\|#]+)(#([^\]]+))?\]\]/[\3]({{< relref "\L\1.md#\3" >}})/g' "$file"
