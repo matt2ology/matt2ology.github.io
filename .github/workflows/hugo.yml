@@ -51,13 +51,29 @@ jobs:
           git submodule sync --recursive
           git submodule deinit --all --force
           git submodule update --init --recursive
+          echo "Submodule status:"
+          git submodule status
+          ls content || echo "No content directory found"
+      - name: Check if content directory exists
+        run: |
+          if [ -d "content" ]; then
+            echo "content directory exists"
+          else
+            echo "content directory does not exist"
+            exit 1
+          fi
+      - name: Check for submodule changes
+        run: |
+          git diff --submodule=log --cached --quiet || echo "Submodule changes detected"
+      - name: Commit and push changes (if any)
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add content
           if git diff --cached --quiet; then
             echo "No submodule changes to commit"
           else
             echo "Submodule changes detected. Committing..."
+            git add content
             git commit -m "chore: sync content from notes repo"
             git push origin HEAD:main
             echo "Changes pushed to main branch"
