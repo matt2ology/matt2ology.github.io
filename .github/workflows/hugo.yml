@@ -77,8 +77,12 @@ jobs:
             sed -i -E 's/\[([^\]]+)\]\(([^)]+)\.md\)/[\1]({{< ref "\2.md" >}})/g' "$file"
           done
 
-          echo "🔎 Showing converted changes (not committed):"
-          git diff --color -- content | cat
+          if git diff --quiet -- content; then
+            echo "No changes to markdown links"
+          else
+            echo "Markdown link conversions detected:"
+            git diff --color=always -- content | cat
+          fi
 
       - name: Setup Pages
         id: pages
