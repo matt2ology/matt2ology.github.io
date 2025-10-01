@@ -76,8 +76,8 @@ jobs:
             # Convert [text](file.md) → [text]({{< relRef "file.md" >}})
             sed -i -E 's/\[([^\]]+)\]\(([^)]+)\.md\)/[\1]({{< relRef "\2.md" >}})/g' "$file"
 
-            # Convert [[Page Name#Anchor]] → [Anchor]({{< relrelRef "page name.md#anchor" >}})
-            sed -i -E 's/\[\[([^\|#]+)(#([^\]]+))?\]\]/[\3]({{< relrelRef "\L\1.md\3" >}})/g' "$file"
+            # Convert [[Page Name#Anchor]] → [Anchor]({{< relRef "page name.md#anchor" >}})
+            sed -i -E 's/\[\[([^\|#]+)(#([^\]]+))?\]\]/[\3]({{< relRef "\L\1.md\3" >}})/g' "$file"
           done
 
           if git -C content diff --quiet; then
