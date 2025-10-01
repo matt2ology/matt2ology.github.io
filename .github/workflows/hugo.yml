@@ -77,6 +77,9 @@ jobs:
             sed -i -E 's/\[([^\]]+)\]\(([^)]+)\.md\)/[\1]({{< ref "\2.md" >}})/g' "$file"
           done
 
+          echo "🔎 Showing converted changes (not committed):"
+          git diff --color -- content | cat
+
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
