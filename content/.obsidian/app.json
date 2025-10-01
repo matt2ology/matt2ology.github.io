@@ -1,0 +1,14 @@
+{
+  "alwaysUpdateLinks": true,
+  "newLinkFormat": "relative",
+  "attachmentFolderPath": "./attachments",
+  "showLineNumber": true,
+  "showIndentGuide": true,
+  "useTab": false,
+  "tabSize": 4,
+  "vimMode": true,
+  "useMarkdownLinks": true,
+  "userIgnoreFilters": [
+    "templates/"
+  ]
+}
