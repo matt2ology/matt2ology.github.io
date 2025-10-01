@@ -67,17 +67,17 @@ jobs:
       - name: Convert markdown links to Hugo shortcodes
         run: |
           find content -name "*.md" -not -path "content/templates/*" -print0 | while IFS= read -r -d '' file; do
-            # Convert [[Page Name]] → [Page Name]({{< relRef "page name.md" >}})
-            sed -i -E 's/\[\[([^\|#]+)\]\]/[\1]({{< relRef "\L\1.md" >}})/g' "$file"
+            # Convert [[Page Name]] → [Page Name]({{< relref "page name.md" >}})
+            sed -i -E 's/\[\[([^\|#]+)\]\]/[\1]({{< relref "\L\1.md" >}})/g' "$file"
 
-            # Convert [[Page Name|Alias]] → [Alias]({{< relRef "page name.md" >}})
-            sed -i -E 's/\[\[([^]|]+)\|([^]]+)\]\]/[\2]({{< relRef "\L\1.md" >}})/g' "$file"
+            # Convert [[Page Name|Alias]] → [Alias]({{< relref "page name.md" >}})
+            sed -i -E 's/\[\[([^]|]+)\|([^]]+)\]\]/[\2]({{< relref "\L\1.md" >}})/g' "$file"
 
-            # Convert [text](file.md) → [text]({{< relRef "file.md" >}})
-            sed -i -E 's/\[([^\]]+)\]\(([^)]+)\.md\)/[\1]({{< relRef "\2.md" >}})/g' "$file"
+            # Convert [text](file.md) → [text]({{< relref "file.md" >}})
+            sed -i -E 's/\[([^\]]+)\]\(([^)]+)\.md\)/[\1]({{< relref "\2.md" >}})/g' "$file"
 
-            # Convert [[Page Name#Anchor]] → [Anchor]({{< relRef "page name.md#anchor" >}})
-            sed -i -E 's/\[\[([^\|#]+)(#([^\]]+))?\]\]/[\3]({{< relRef "\L\1.md\3" >}})/g' "$file"
+            # Convert [[Page Name#Anchor]] → [Anchor]({{< relref "page name.md#anchor" >}})
+            sed -i -E 's/\[\[([^\|#]+)(#([^\]]+))?\]\]/[\3]({{< relref "\L\1.md\3" >}})/g' "$file"
           done
 
           if git -C content diff --quiet; then
