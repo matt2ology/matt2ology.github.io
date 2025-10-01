@@ -83,15 +83,8 @@ jobs:
                 echo -e "\033[32mConverted: $converted_line\033[0m"
               fi
 
-              # Convert [text](file.md) → [text]({{< relref "file.md" >}})
-              converted_line=$(echo "$line" | sed -E 's/\[([^\]]+)\]\(([^\)]+)\.md\)/[\1]({{< relref "\2" >}})/g')
-              if [[ "$line" != "$converted_line" ]]; then
-                echo -e "\033[31mOriginal: $line\033[0m"
-                echo -e "\033[32mConverted: $converted_line\033[0m"
-              fi
-
               # Convert [[Page Name#Anchor]] → [Anchor]({{< relref "page name.md#anchor" >}})
-              converted_line=$(echo "$line" | sed -E 's/\[\[([^\|#]+)(#([^\]]+))?\]\]/[\3]({{< relref "\L\1.md#\3" >}})/g')
+              converted_line=$(echo "$line" | sed -E 's/\[\[([^\|#]+)(#([^\]]+))?\]\]/[\3]({{< relref "\L\1.md\3" >}})/g')
               if [[ "$line" != "$converted_line" ]]; then
                 echo -e "\033[31mOriginal: $line\033[0m"
                 echo -e "\033[32mConverted: $converted_line\033[0m"
