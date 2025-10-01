@@ -4,4 +4,4 @@
   branch = main
 [submodule "themes/hugo-theme-stack"]
     path = themes/hugo-theme-stack
-    url = https://github.com/CaiJimmy/hugo-theme-stack/
+    url = https://github.com/matt2ology/hugo-theme-stack.git
