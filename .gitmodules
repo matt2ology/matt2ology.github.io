@@ -3,5 +3,5 @@
 	url = https://github.com/matt2ology/tech-journal-and-blog.git
   branch = main
 [submodule "themes/hugo-theme-stack"]
-    path = themes/hugo-theme-stack
-    url = https://github.com/matt2ology/hugo-theme-stack.git
+	path = themes/hugo-theme-stack
+	url = https://github.com/matt2ology/hugo-theme-stack.git
