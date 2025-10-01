@@ -63,6 +63,20 @@ jobs:
             git push origin HEAD:main
             echo "Changes pushed to main branch"
           fi
+
+      - name: Convert markdown links to Hugo shortcodes
+        run: |
+          find content -name "*.md" -not -path "content/templates/*" -print0 | while IFS= read -r -d '' file; do
+            # Convert [[Page Name]] → {{< ref "page name.md" >}}
+            sed -i -E 's/\[\[([^]|]+)\]\]/{{< ref "\L\1.md" >}}/g' "$file"
+
+            # Convert [[Page Name|Alias]] → [Alias]({{< ref "page name.md" >}})
+            sed -i -E 's/\[\[([^]|]+)\|([^]]+)\]\]/[\2]({{< ref "\L\1.md" >}})/g' "$file"
+
+            # Convert [text](file.md) → [text]({{< ref "file.md" >}})
+            sed -i -E 's/\[([^\]]+)\]\(([^)]+)\.md\)/[\1]({{< ref "\2.md" >}})/g' "$file"
+          done
+
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
