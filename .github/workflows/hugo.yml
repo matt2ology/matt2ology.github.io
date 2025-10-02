@@ -89,6 +89,13 @@ jobs:
                 echo -e "\033[31mOriginal: $line\033[0m"
                 echo -e "\033[32mConverted: $converted_line\033[0m"
               fi
+
+              # Convert [Page Name](page name.md) → [Page Name]({{< relref "page name.md" >}})
+              converted_line=$(echo "$line" | sed -E 's/\[([^\]]+)\]\(([^\)]+\.md)\)/[\1]({{< relref "\2" >}})/g')
+              if [[ "$line" != "$converted_line" ]]; then
+                echo -e "\033[31mOriginal: $line\033[0m"
+                echo -e "\033[32mConverted: $converted_line\033[0m"
+              fi
             done < "$file"
           done
 
