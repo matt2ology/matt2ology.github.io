@@ -85,7 +85,7 @@ jobs:
             sed -i -E 's/\[\[([^]|#]+)\|([^]]+)\]\]/[\2]({{< relref "\L\1.md" >}})/g' "$file"
             sed -i -E 's/\[\[([^]|#]+)#([^\]]+)\]\]/[\2]({{< relref "\L\1.md#\2" >}})/g' "$file"
             sed -i -E 's/\[\[([^]|#]+)\]\]/[\1]({{< relref "\L\1.md" >}})/g' "$file"
-            sed -i -E 's/\[([^]]+)\]\(([^\)]+\.md)\)/[\1]({{< relref "\2" >}})/g' "$file"
+            sed -i -E 's/\[([^]]+)\]\(((?!https?:|mailto:)[^)]*\.md)\)/[\1]({{< relref "\2" >}})/g' "$file"
 
             # Collect changes by comparing before vs after
             while IFS= read -r line_before && IFS= read -r line_after <&3; do
