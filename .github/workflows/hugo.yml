@@ -67,48 +67,50 @@ jobs:
       - name: Convert markdown links to Hugo shortcodes
         run: |
           find content -name "*.md" -not -path "content/templates/*" -print0 | while IFS= read -r -d '' file; do
+            echo -e "\033[33mProcessing file: $file\033[0m"
             tmpfile=$(mktemp)
             while IFS= read -r line; do
               original_line="$line"
+              converted_line="$line"
 
-              # Convert [[Page Name]] → [Page Name]({{< relref "page name.md" >}})
-              converted_line=$(echo "$line" | sed -E 's/\[\[([^\|#]+)\]\]/[\1]({{< relref "\L\1.md" >}})/g')
-              if [[ "$original_line" != "$converted_line" ]]; then
-                echo -e "\033[31mOriginal: $original_line\033[0m"
-                echo -e "\033[32mConverted: $converted_line\033[0m"
+              # Rule 1: [[Page Name]] → [Page Name]({{< relref "page name.md" >}})
+              test_line=$(echo "$converted_line" | sed -E 's/\[\[([^\|#]+)\]\]/[\1]({{< relref "\L\1.md" >}})/g')
+              if [[ "$converted_line" != "$test_line" ]]; then
+                echo -e "Original: \033[31m$converted_line\033[0m"
+                echo -e "Converted: \033[32m$test_line\033[0m"
+                converted_line="$test_line"
               fi
-              line="$converted_line"
 
-              # Convert [[Page Name|Alias]] → [Alias]({{< relref "page name.md" >}})
-              converted_line=$(echo "$line" | sed -E 's/\[\[([^\|]+)\|([^\]]+)\]\]/[\2]({{< relref "\L\1.md" >}})/g')
-              if [[ "$line" != "$converted_line" ]]; then
-                echo -e "\033[31mOriginal: $line\033[0m"
-                echo -e "\033[32mConverted: $converted_line\033[0m"
+              # Rule 2: [[Page Name|Alias]] → [Alias]({{< relref "page name.md" >}})
+              test_line=$(echo "$converted_line" | sed -E 's/\[\[([^\|]+)\|([^\]]+)\]\]/[\2]({{< relref "\L\1.md" >}})/g')
+              if [[ "$converted_line" != "$test_line" ]]; then
+                echo -e "Original: \033[31m$converted_line\033[0m"
+                echo -e "Converted: \033[32m$test_line\033[0m"
+                converted_line="$test_line"
               fi
-              line="$converted_line"
 
-              # Convert [[Page Name#Anchor]] → [Anchor]({{< relref "page name.md#anchor" >}})
-              converted_line=$(echo "$line" | sed -E 's/\[\[([^|#]+)#([^\]]+)\]\]/[\2]({{< relref "\L\1.md#\2" >}})/g')
-              if [[ "$line" != "$converted_line" ]]; then
-                echo -e "\033[31mOriginal: $line\033[0m"
-                echo -e "\033[32mConverted: $converted_line\033[0m"
+              # Rule 3: [[Page Name#Anchor]] → [Anchor]({{< relref "page name.md#anchor" >}})
+              test_line=$(echo "$converted_line" | sed -E 's/\[\[([^|#]+)#([^\]]+)\]\]/[\2]({{< relref "\L\1.md#\2" >}})/g')
+              if [[ "$converted_line" != "$test_line" ]]; then
+                echo -e "Original: \033[31m$converted_line\033[0m"
+                echo -e "Converted: \033[32m$test_line\033[0m"
+                converted_line="$test_line"
               fi
-              line="$converted_line"
 
-              # Convert [Page Name](page name.md) → [Page Name]({{< relref "page name.md" >}})
-              converted_line=$(echo "$line" | sed -E 's/\[([^\]]+)\]\(([^\)]+\.md)\)/[\1]({{< relref "\2" >}})/g')
-              if [[ "$line" != "$converted_line" ]]; then
-                echo -e "\033[31mOriginal: $line\033[0m"
-                echo -e "\033[32mConverted: $converted_line\033[0m"
+              # Rule 4: [Page Name](page name.md) → [Page Name]({{< relref "page name.md" >}})
+              test_line=$(echo "$converted_line" | sed -E 's/\[([^\]]+)\]\(([^\)]+\.md)\)/[\1]({{< relref "\2" >}})/g')
+              if [[ "$converted_line" != "$test_line" ]]; then
+                echo -e "Original: \033[31m$converted_line\033[0m"
+                echo -e "Converted: \033[32m$test_line\033[0m"
+                converted_line="$test_line"
               fi
-              line="$converted_line"
 
-              echo "$line" >> "$tmpfile"
+              echo "$converted_line" >> "$tmpfile"
             done < "$file"
 
-            # Replace original file with updated version
             mv "$tmpfile" "$file"
           done
+
 
       - name: Setup Pages
         id: pages
