@@ -67,8 +67,6 @@ jobs:
       - name: Convert markdown links to Hugo shortcodes
         run: |
           shopt -s globstar nullglob
-          changes=()  # list to store all changes across files
-
           for file in content/**/*.md; do
             # skip templates folder
             if [[ "$file" == content/templates/* ]]; then
@@ -77,10 +75,6 @@ jobs:
 
             echo "Processing $file"
 
-            # Make a temp copy for diffing
-            before=$(mktemp)
-            cp "$file" "$before"
-
             # [[Page Name|Alias]] → [Alias]({{< relref "page name.md" >}})
             sed -i -E 's/\[\[([^]|#]+)\|([^]]+)\]\]/[\2]({{< relref "\L\1.md" >}})/g' "$file"
             # [[Page Name#Anchor]] → [Anchor]({{< relref "page name.md#anchor" >}})
@@ -88,35 +82,9 @@ jobs:
             # [[Page Name]] → [Page Name]({{< relref "page name.md" >}})
             sed -i -E 's/\[\[([^]|#]+)\]\]/[\1]({{< relref "\L\1.md" >}})/g' "$file"
             # [Page Name](page name.md) → [Page Name]({{< relref "page name.md" >}})
-            # (ignore http, https, mailto links)
-            sed -i -E 's/\[([^]]+)\]\(((?!https?:|mailto:)[^)]*\.md)\)/[\1]({{< relref "\2" >}})/g' "$file"
-
-            # Collect changes by comparing before vs after
-            while IFS= read -r line_before && IFS= read -r line_after <&3; do
-              if [[ "$line_before" != "$line_after" ]]; then
-                changes+=("File: $file")
-                changes+=("Original: $line_before")
-                changes+=("Converted: $line_after")
-              fi
-            done <"$before" 3<"$file"
-
-            rm "$before"
+            # With negative lookahead to exclude http:// OR https:// links AND mailto: links
+            sed -i -E 's/\[([^\]]+)\]\(((?!https?:|mailto:)[^)]*\.md)\)/[\1]({{< relref "\2" >}})/g' "$file"
           done
-
-          # Print all collected changes at the end
-          if [[ ${#changes[@]} -gt 0 ]]; then
-            echo -e "\033[36m--- Summary of all link conversions ---\033[0m"
-            for ((i=0; i<${#changes[@]}; i++)); do
-              case "${changes[$i]}" in
-                Original:*) echo -e "\033[31m${changes[$i]}\033[0m" ;;
-                Converted:*) echo -e "\033[32m${changes[$i]}\033[0m" ;;
-                File:*) echo -e "\033[33m${changes[$i]}\033[0m" ;;
-                *) echo "${changes[$i]}" ;;
-              esac
-            done
-          else
-            echo "No markdown link changes detected."
-          fi
 
       - name: Setup Pages
         id: pages
