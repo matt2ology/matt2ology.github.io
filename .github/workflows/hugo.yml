@@ -66,35 +66,49 @@ jobs:
 
       - name: Convert markdown links to Hugo shortcodes
         run: |
-          shopt -s globstar nullglob
-          for file in content/**/*.md; do
-            # skip templates folder
-            if [[ "$file" == content/templates/* ]]; then
-              continue
-            fi
+          find content -name "*.md" -not -path "content/templates/*" -print0 | while IFS= read -r -d '' file; do
+            tmpfile=$(mktemp)
+            while IFS= read -r line; do
+              original_line="$line"
 
-            echo "Processing $file"
+              # Convert [[Page Name]] → [Page Name]({{< relref "page name.md" >}})
+              converted_line=$(echo "$line" | sed -E 's/\[\[([^\|#]+)\]\]/[\1]({{< relref "\L\1.md" >}})/g')
+              if [[ "$original_line" != "$converted_line" ]]; then
+                echo -e "\033[31mOriginal: $original_line\033[0m"
+                echo -e "\033[32mConverted: $converted_line\033[0m"
+              fi
+              line="$converted_line"
 
-            # [[Page Name|Alias]] → [Alias]({{< relref "page name.md" >}})
-            sed -i -E 's/\[\[([^]|#]+)\|([^]]+)\]\]/[\2]({{< relref "\L\1.md" >}})/g' "$file"
+              # Convert [[Page Name|Alias]] → [Alias]({{< relref "page name.md" >}})
+              converted_line=$(echo "$line" | sed -E 's/\[\[([^\|]+)\|([^\]]+)\]\]/[\2]({{< relref "\L\1.md" >}})/g')
+              if [[ "$line" != "$converted_line" ]]; then
+                echo -e "\033[31mOriginal: $line\033[0m"
+                echo -e "\033[32mConverted: $converted_line\033[0m"
+              fi
+              line="$converted_line"
 
-            # [[Page Name#Anchor]] → [Anchor]({{< relref "page name.md#anchor" >}})
-            sed -i -E 's/\[\[([^]|#]+)#([^\]]+)\]\]/[\2]({{< relref "\L\1.md#\2" >}})/g' "$file"
+              # Convert [[Page Name#Anchor]] → [Anchor]({{< relref "page name.md#anchor" >}})
+              converted_line=$(echo "$line" | sed -E 's/\[\[([^|#]+)#([^\]]+)\]\]/[\2]({{< relref "\L\1.md#\2" >}})/g')
+              if [[ "$line" != "$converted_line" ]]; then
+                echo -e "\033[31mOriginal: $line\033[0m"
+                echo -e "\033[32mConverted: $converted_line\033[0m"
+              fi
+              line="$converted_line"
 
-            # [[Page Name]] → [Page Name]({{< relref "page name.md" >}})
-            sed -i -E 's/\[\[([^]|#]+)\]\]/[\1]({{< relref "\L\1.md" >}})/g' "$file"
+              # Convert [Page Name](page name.md) → [Page Name]({{< relref "page name.md" >}})
+              converted_line=$(echo "$line" | sed -E 's/\[([^\]]+)\]\(([^\)]+\.md)\)/[\1]({{< relref "\2" >}})/g')
+              if [[ "$line" != "$converted_line" ]]; then
+                echo -e "\033[31mOriginal: $line\033[0m"
+                echo -e "\033[32mConverted: $converted_line\033[0m"
+              fi
+              line="$converted_line"
 
-            # [Page Name](page name.md) → [Page Name]({{< relref "page name.md" >}})
-            sed -i -E 's/\[([^]]+)\]\(([^\)]+\.md)\)/[\1]({{< relref "\2" >}})/g' "$file"
+              echo "$line" >> "$tmpfile"
+            done < "$file"
+
+            # Replace original file with updated version
+            mv "$tmpfile" "$file"
           done
-
-          # Check if any changes were made to markdown links
-          if git -C content diff --quiet; then
-            echo "No markdown link changes in content/"
-          else
-            echo "Markdown link conversions detected in content/:"
-            git -C content diff --color=always | cat
-          fi
 
       - name: Setup Pages
         id: pages
