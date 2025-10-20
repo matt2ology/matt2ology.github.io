@@ -82,8 +82,8 @@ jobs:
             cp "$file" "$before"
 
             # Convert various Markdown and wiki-style links into Hugo-compatible relative reference shortcodes
-            # [[Page Name#anchor|Alt Text]] → [Alt Text]({{< relref "page name.md" >}}#anchor)
-            sed -E -i 's/\[\[([^|#]+)#([^|]+)\|([^]]+)\]\]/[\3]({{< relref "\L\1.md" >}}#\2)/g' "$file"
+            # [[../path/to/page#anchor|Alt Text]] → [Alt Text]({{< relref "/path/to/page.md" >}}#anchor)
+            sed -E -i 's#\[\[([.\/A-Za-z0-9_-]+)#([^|]+)\|([^]]+)\]\]#[\3]({{< relref "\1.md" >}}#\2)#g' "$file"
 
             # [[Page Name|Alt Text]] → [Alt Text]({{< relref "page name.md" >}})
             sed -E -i 's/\[\[([^|#]+)\|([^]]+)\]\]/[\2]({{< relref "\L\1.md" >}})/g' "$file"
