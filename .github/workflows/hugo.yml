@@ -102,31 +102,9 @@ jobs:
 
       - name: Replace wiki-style links with Hugo relref
         run: |
-          # [[Page#Anchor|Label]] -> [Label]({{< relref "Page.md#anchor" >}})
-          # Find all Markdown files in the current directory and subdirectories
-          # Use null character as delimiter to safely handle filenames with spaces
-          find . -name "*.md" -print0 | xargs -0 perl -pi -e '
-
-            # Replace links in the format [[Page#Anchor|Label]] with Hugo relref format:
-            # Example: [[GettingStarted#Intro|Click here]] → [Click here]({{< relref "GettingStarted.md#intro" >}})
-            s{
-              \[\[     # Match opening double square brackets [[
-              (.+?)    # $1: Capture page path (everything up to '#' character)
-              \#(.+?)  # $2: Capture anchor (everything up to '|')
-              \|(.+?)  # $3: Capture label (everything up to closing brackets)
-              \]\]     # Match closing double square brackets ]]
-            }{
-              # Inside the replacement block:
-              my ($p, $a, $t) = ($1, $2, $3);  # Assign captured groups to variables
-
-              $a = lc($a);                     # Lowercase the anchor
-              $a =~ s/[^a-z0-9 ]//gi;          # Remove punctuation (keep alphanumeric and space)
-              $a =~ s/ /-/g;                   # Replace spaces with dashes (Hugo-style anchors)
-
-              # Return the converted Hugo markdown link
-              "[$t]({{< relref \"$p.md#$a\" >}})"
-            }gex                             # 'g' = global, 'e' = eval replacement code, 'x' = ignore whitespace in pattern
-          '
+          # This command converts wiki-style links:
+          # [[Page#Anchor|Label]] → [Label]({{< relref "Page.md#anchor" >}})
+          find . -name "*.md" -print0 | xargs -0 perl -pi -e 's/\[\[(.+?)#(.+?)\|(.+?)\]\]/my($p,$a,$t)=($1,$2,$3);$a=lc($a);$a=~s/[^a-z0-9 ]//gi;$a=~s/ /-/g;"[$t]({{< relref \"$p.md#$a\" >}})"/ge'
 
       - name: Setup Pages
         id: pages
