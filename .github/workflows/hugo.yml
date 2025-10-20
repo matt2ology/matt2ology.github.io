@@ -102,9 +102,30 @@ jobs:
 
       - name: Replace wiki-style links with Hugo relref
         run: |
-          # This command converts wiki-style links:
-          # [[Page#Anchor|Label]] → [Label]({{< relref "Page.md#anchor" >}})
-          find . -name "*.md" -print0 | xargs -0 perl -pi -e 's/\[\[(.+?)#(.+?)\|(.+?)\]\]/my($p,$a,$t)=($1,$2,$3);$a=lc($a);$a=~s/[^a-z0-9 ]//gi;$a=~s/ /-/g;"[$t]({{< relref \"$p.md#$a\" >}})"/ge'
+          # Find all Markdown files recursively, using null-character delimiter to handle filenames with spaces safely
+          find . -name "*.md" -print0 | xargs -0 perl -pi -e "
+            # Perform a regex substitution on each line of the files (in-place editing -pi)
+            s{
+              \\[\\[   # Match literal opening brackets '[[' (escaped for Perl and shell)
+              (.+?)    # Capture group 1 ($1): page path, minimal match up to '#'
+              \#       # Match literal '#' separating page and anchor
+              (.+?)    # Capture group 2 ($2): anchor text, minimal match up to '|'
+              \\|      # Match literal pipe '|' character separating anchor and label
+              (.+?)    # Capture group 3 ($3): label text, minimal match up to closing brackets
+              \\]\\]   # Match literal closing brackets ']]'
+            }{
+              # Inside the replacement block:
+              my (\$p, \$a, \$t) = (\$1, \$2, \$3);   # Assign captured page, anchor, and label to variables
+
+              \$a = lc(\$a);              # Convert anchor to lowercase
+              \$a =~ s/[^a-z0-9 ]//gi;    # Remove punctuation: keep only letters, numbers, and spaces
+              \$a =~ s/ /-/g;             # Replace spaces with dashes (Hugo-style anchor format)
+
+              # Return the replaced string formatted as a Hugo relref shortcode link:
+              # [Label]({{< relref 'Page.md#anchor' >}})
+              \"[\$t]({{< relref '\$p.md#\$a' >}})\"
+            }gex   # Flags: g=global, e=evaluate replacement as code, x=allow whitespace/comments in regex
+          "
 
       - name: Setup Pages
         id: pages
