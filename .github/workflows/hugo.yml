@@ -95,7 +95,11 @@ jobs:
             sed -E -i 's/\[([^]]+)\]\(([^\)]+\.md)#([^\)]+)\)/[\1]({{< relref "\2" >}}#\3)/g' "$file"
 
             # [[../path/to/page#anchor|Alt Text]] → [Alt Text]({{< relref "/path/to/page.md" >}}#anchor)
-            sed -E 's/(\s*#+ \s*)\[\[([^|#]+)(#([^|]+))?\|(.+)\]\]/\1[\5](\{\{< relref "\2.md" >\}\}\4)/g'
+            perl -pe '
+              s/^(#+\s*)\[\[([./A-Za-z0-9_\-]+)#([^|]+)\|([^]]+)\]\]/
+                $1 . "[" . $4 . "]({{< relref \"" . $2 . ".md\" >}}#" . lc($3) =~ s/\s+/-/gr . "})"
+              /ge
+            ' "$file"
 
             # [Alt](some-page.md) → [Alt]({{< relref "some-page.md" >}})
             sed -E -i 's/\[([^]]+)\]\(([^\)]+\.md)\)/[\1]({{< relref "\2" >}})/g' "$file"
