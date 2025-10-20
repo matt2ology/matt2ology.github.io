@@ -82,9 +82,6 @@ jobs:
             cp "$file" "$before"
 
             # Convert various Markdown and wiki-style links into Hugo-compatible relative reference shortcodes
-            # [[../path/to/page#anchor|Alt Text]] → [Alt Text]({{< relref "/path/to/page.md" >}}#anchor)
-            sed -E -i 's|\[\[([./A-Za-z0-9_\-]+)#([^|]+)\|([^]]+)\]\]|[\3]({{< relref "/\1.md" >}}#\2)|g' "$file"
-
             # [[Page Name|Alt Text]] → [Alt Text]({{< relref "page name.md" >}})
             sed -E -i 's/\[\[([^|#]+)\|([^]]+)\]\]/[\2]({{< relref "\L\1.md" >}})/g' "$file"
 
@@ -96,6 +93,9 @@ jobs:
 
             # [Alt](some-page.md#anchor) → [Alt]({{< relref "some-page.md" >}}#anchor)
             sed -E -i 's/\[([^]]+)\]\(([^\)]+\.md)#([^\)]+)\)/[\1]({{< relref "\2" >}}#\3)/g' "$file"
+
+            # [[../path/to/page#anchor|Alt Text]] → [Alt Text]({{< relref "/path/to/page.md" >}}#anchor)
+            sed -E -i 's|\[\[([./A-Za-z0-9_\-]+)#([^|]+)\|([^]]+)\]\]|[\3]({{< relref "/\1.md" >}}#\2)|g' "$file"
 
             # [Alt](some-page.md) → [Alt]({{< relref "some-page.md" >}})
             sed -E -i 's/\[([^]]+)\]\(([^\)]+\.md)\)/[\1]({{< relref "\2" >}})/g' "$file"
