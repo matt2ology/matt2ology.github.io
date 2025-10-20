@@ -82,10 +82,24 @@ jobs:
             cp "$file" "$before"
 
             # Convert various Markdown and wiki-style links into Hugo-compatible relative reference shortcodes
+            # Convert wiki-style links with label ([[Page|Label]]) into Hugo relref shortcodes:
+            # Example: [[MyPage|Click here]] → [Click here]({{< relref "mypage.md" >}})
             sed -i -E 's/\[\[([^]|#]+)\|([^]]+)\]\]/[\2]({{< relref "\L\1.md" >}})/g' "$file"
+
+            # Convert wiki-style links with section ([[Page#Section]]) into Hugo relref with anchor:
+            # Example: [[MyPage#section]] → [section]({{< relref "mypage.md#section" >}})
             sed -i -E 's/\[\[([^]|#]+)#([^\]]+)\]\]/[\2]({{< relref "\L\1.md#\2" >}})/g' "$file"
+
+            # Convert simple wiki-style links ([[Page]]) into Hugo relref shortcodes:
+            # Example: [[MyPage]] → [MyPage]({{< relref "mypage.md" >}})
             sed -i -E 's/\[\[([^]|#]+)\]\]/[\1]({{< relref "\L\1.md" >}})/g' "$file"
+
+            # Convert Markdown links to sections in .md files into Hugo relref format:
+            # Example: [Intro](guide.md#start) → [Intro]({{< relref "guide.md#start" >}})
             sed -i -E 's/\[([^]]+)\]\(([^\)]+\.md#[^\)]+)\)/[\1]({{< relref "\2" >}})/g' "$file"
+
+            # Convert standard Markdown links to .md files into Hugo relref format:
+            # Example: [Guide](guide.md) → [Guide]({{< relref "guide.md" >}})
             sed -i -E 's/\[([^]]+)\]\(([^\)]+\.md)\)/[\1]({{< relref "\2" >}})/g' "$file"
 
             # Collect changes by comparing before vs after
@@ -102,29 +116,32 @@ jobs:
 
       - name: Replace wiki-style links with Hugo relref
         run: |
-          # Find all Markdown files recursively, using null-character delimiter to handle filenames with spaces safely
+          # Find all Markdown (*.md) files recursively, outputting null-delimited filenames to safely handle spaces
           find . -name "*.md" -print0 | xargs -0 perl -pi -e "
-            # Perform a regex substitution on each line of the files (in-place editing -pi)
+            # Perform an in-place regex substitution on each file's content
             s{
               \\[\\[   # Match literal opening brackets '[[' (escaped for Perl and shell)
-              (.+?)    # Capture group 1 ($1): page path, minimal match up to '#'
+              (.+?)    # Capture group 1 ($1): page path, minimally up to '#'
               \#       # Match literal '#' separating page and anchor
-              (.+?)    # Capture group 2 ($2): anchor text, minimal match up to '|'
+              (.+?)    # Capture group 2 ($2): anchor text, minimally up to '|'
               \\|      # Match literal pipe '|' character separating anchor and label
-              (.+?)    # Capture group 3 ($3): label text, minimal match up to closing brackets
+              (.+?)    # Capture group 3 ($3): label text, minimally up to closing brackets
               \\]\\]   # Match literal closing brackets ']]'
             }{
               # Inside the replacement block:
-              my (\$p, \$a, \$t) = (\$1, \$2, \$3);   # Assign captured page, anchor, and label to variables
 
-              \$a = lc(\$a);              # Convert anchor to lowercase
-              \$a =~ s/[^a-z0-9 ]//gi;    # Remove punctuation: keep only letters, numbers, and spaces
-              \$a =~ s/ /-/g;             # Replace spaces with dashes (Hugo-style anchor format)
+              # Assign captures to variables
+              my (\$p, \$a, \$t) = (\$1, \$2, \$3);
 
-              # Return the replaced string formatted as a Hugo relref shortcode link:
-              # [Label]({{< relref 'Page.md#anchor' >}})
-              \"[\$t]({{< relref '\$p.md#\$a' >}})\"
-            }gex   # Flags: g=global, e=evaluate replacement as code, x=allow whitespace/comments in regex
+              # Normalize anchor text:
+              \$a = lc(\$a);             # Convert anchor to lowercase
+              \$a =~ s/[^a-z0-9 ]//gi;   # Remove punctuation: keep only letters, numbers, spaces
+              \$a =~ s/ /-/g;            # Replace spaces with dashes for Hugo-style anchors
+
+              # Format replacement as a Hugo relref shortcode:
+              # Use double quotes around the parameter (escaped as \\\" for shell + Perl)
+              \"[\$t]({{< relref \\\"\$p.md#\$a\\\" >}})\"
+            }gex   # Flags: g=global, e=evaluate replacement as Perl code, x=allow whitespace/comments in regex
           "
 
       - name: Setup Pages
