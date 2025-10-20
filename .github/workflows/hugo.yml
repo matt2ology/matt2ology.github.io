@@ -83,7 +83,7 @@ jobs:
 
             # Convert various Markdown and wiki-style links into Hugo-compatible relative reference shortcodes
             # [[Page Name#anchor|Alternative Name]]
-            sed -i -E 's/\[\[([^|#]+)#([^|]+)\|([^]]+)\]\]/[\3]({{< relref "\\"\L\1.md#\2\\"" >}})/g' "$file"
+            sed -i -E 's/\[\[([^|#]+)#([^|]+)\|([^]]+)\]\]/[\3]({{< relref "\1.md#\2" >}})/g' "$file"
             sed -i -E 's/\[\[([^]|#]+)\|([^]]+)\]\]/[\2]({{< relref "\L\1.md" >}})/g' "$file"
             sed -i -E 's/\[\[([^]|#]+)#([^\]]+)\]\]/[\2]({{< relref "\L\1.md#\2" >}})/g' "$file"
             sed -i -E 's/\[\[([^]|#]+)\]\]/[\1]({{< relref "\L\1.md" >}})/g' "$file"
