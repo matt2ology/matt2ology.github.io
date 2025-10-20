@@ -82,23 +82,11 @@ jobs:
             cp "$file" "$before"
 
             # Convert various Markdown and wiki-style links into Hugo-compatible relative reference shortcodes
-            # [[Page Name|Alt Text]] → [Alt Text]({{< relref "page name.md" >}})
-            sed -E -i 's/\[\[([^|#]+)\|([^]]+)\]\]/[\2]({{< relref "\L\1.md" >}})/g' "$file"
-
-            # [[Page Name#anchor]] → [anchor]({{< relref "page name.md" >}}#anchor)
-            sed -E -i 's/\[\[([^|#]+)#([^\]]+)\]\]/[\2]({{< relref "\L\1.md" >}}#\2)/g' "$file"
-
-            # [[Page Name]] → [Page Name]({{< relref "page name.md" >}})
-            sed -E -i 's/\[\[([^|#]+)\]\]/[\1]({{< relref "\L\1.md" >}})/g' "$file"
-
-            # [Alt](some-page.md#anchor) → [Alt]({{< relref "some-page.md" >}}#anchor)
-            sed -E -i 's/\[([^]]+)\]\(([^\)]+\.md)#([^\)]+)\)/[\1]({{< relref "\2" >}}#\3)/g' "$file"
-
-            # [[../path/to/page#anchor|Alt Text]] → [Alt Text]({{< relref "/path/to/page.md" >}}#anchor)
-            perl -pe 's|\[\[(.+?)#(.+?)\|(.+?)\]\]|my($p,$a,$t)=($1,$2,$3);$a=lc($a);$a=~s/ /-/g;"[$t]({{< relref \"$p.md#$a\" >}})"|ge'
-
-            # [Alt](some-page.md) → [Alt]({{< relref "some-page.md" >}})
-            sed -E -i 's/\[([^]]+)\]\(([^\)]+\.md)\)/[\1]({{< relref "\2" >}})/g' "$file"
+            sed -i -E 's/\[\[([^]|#]+)\|([^]]+)\]\]/[\2]({{< relref "\L\1.md" >}})/g' "$file"
+            sed -i -E 's/\[\[([^]|#]+)#([^\]]+)\]\]/[\2]({{< relref "\L\1.md#\2" >}})/g' "$file"
+            sed -i -E 's/\[\[([^]|#]+)\]\]/[\1]({{< relref "\L\1.md" >}})/g' "$file"
+            sed -i -E 's/\[([^]]+)\]\(([^\)]+\.md#[^\)]+)\)/[\1]({{< relref "\2" >}})/g' "$file"
+            sed -i -E 's/\[([^]]+)\]\(([^\)]+\.md)\)/[\1]({{< relref "\2" >}})/g' "$file"
 
             # Collect changes by comparing before vs after
             while IFS= read -r line_before && IFS= read -r line_after <&3; do
@@ -111,6 +99,34 @@ jobs:
 
             rm "$before"
           done
+
+      - name: Replace wiki-style links with Hugo relref
+        run: |
+          # [[Page#Anchor|Label]] -> [Label]({{< relref "Page.md#anchor" >}})
+          # Find all Markdown files in the current directory and subdirectories
+          # Use null character as delimiter to safely handle filenames with spaces
+          find . -name "*.md" -print0 | xargs -0 perl -pi -e '
+
+            # Replace links in the format [[Page#Anchor|Label]] with Hugo relref format:
+            # Example: [[GettingStarted#Intro|Click here]] → [Click here]({{< relref "GettingStarted.md#intro" >}})
+            s{
+              \[\[     # Match opening double square brackets [[
+              (.+?)    # $1: Capture page path (everything up to '#' character)
+              \#(.+?)  # $2: Capture anchor (everything up to '|')
+              \|(.+?)  # $3: Capture label (everything up to closing brackets)
+              \]\]     # Match closing double square brackets ]]
+            }{
+              # Inside the replacement block:
+              my ($p, $a, $t) = ($1, $2, $3);  # Assign captured groups to variables
+
+              $a = lc($a);                     # Lowercase the anchor
+              $a =~ s/[^a-z0-9 ]//gi;          # Remove punctuation (keep alphanumeric and space)
+              $a =~ s/ /-/g;                   # Replace spaces with dashes (Hugo-style anchors)
+
+              # Return the converted Hugo markdown link
+              "[$t]({{< relref \"$p.md#$a\" >}})"
+            }gex                             # 'g' = global, 'e' = eval replacement code, 'x' = ignore whitespace in pattern
+          '
 
       - name: Setup Pages
         id: pages
