@@ -116,35 +116,36 @@ jobs:
 
       - name: Replace wiki-style links with Hugo relref
         run: |
-          # Find all Markdown (*.md) files recursively, outputting null-delimited filenames to safely handle spaces
+          # Find all Markdown (*.md) files recursively
+          # -print0 ensures filenames are null-delimited (handles spaces safely)
           find . -name "*.md" -print0 | xargs -0 perl -pi -e "
-            # Perform an in-place regex substitution on each file's content
+            # Substitute wiki-style links with Hugo relref shortcodes
             s{
-              \\[\\[   # Match literal opening brackets '[[' (escaped for Perl and shell)
-              (.+?)    # Capture group 1 ($1): page path, minimally up to '#'
-              \#       # Match literal '#' separating page and anchor
-              (.+?)    # Capture group 2 ($2): anchor text, minimally up to '|'
-              \\|      # Match literal pipe '|' character separating anchor and label
-              (.+?)    # Capture group 3 ($3): label text, minimally up to closing brackets
-              \\]\\]   # Match literal closing brackets ']]'
+              \[\[              # Match literal '[['
+              (.+?)             # Capture group 1: the page path, non-greedy (e.g., ../path/to/file)
+              \#                # Match literal '#'
+              (.+?)             # Capture group 2: anchor text (e.g., heading in the file)
+              \|                # Match literal '|' (separates anchor and link text)
+              (.+?)             # Capture group 3: link label (the text to display)
+              \]\]              # Match literal ']]'
             }{
-              # Inside the replacement block:
+              # Assign captured values to variables
+              my (\$path, \$anchor, \$text) = (\$1, \$2, \$3);
 
-              # Assign captures to variables
-              my (\$p, \$a, \$t) = (\$1, \$2, \$3);
+              # Normalize the anchor for Hugo-compatible heading links:
+              \$anchor = lc(\$anchor);         # Convert to lowercase
+              \$anchor =~ s/[^a-z0-9 ]//g;     # Remove punctuation (only keep letters, digits, spaces)
+              \$anchor =~ s/ +/-/g;            # Replace spaces with hyphens (Hugo's slug logic)
 
-              # Normalize anchor text:
-              \$a = lc(\$a);             # Convert anchor to lowercase
-              \$a =~ s/[^a-z0-9 ]//gi;   # Remove punctuation: keep only letters, numbers, spaces
-              \$a =~ s/ /-/g;            # Replace spaces with dashes for Hugo-style anchors
+              # Ensure the file path ends with .md (Hugo expects this format)
+              \$path .= '.md' unless \$path =~ /\.md\$/;
 
-              # Normalize page path (if needed, to handle spaces in filenames/paths):
-              \$p =~ s/ /-/g;            # Replace spaces with dashes in the page path
-
-              # Format replacement as a Hugo relref shortcode:
-              # Use double quotes around the parameter (escaped as \\\" for shell + Perl)
-              \"[\$t]({{< relref \\\"\$p.md#\$a\\\" >}})\"
-            }gex   # Flags: g=global, e=evaluate replacement as Perl code, x=allow whitespace/comments in regex
+              # Return the final Hugo relref shortcode using the normalized path and anchor
+              \"[\$text]({{< relref \\\"\$path#\$anchor\\\" >}})\"
+            }gex
+            # g = global (replace all matches)
+            # e = evaluate replacement expression as Perl code
+            # x = extended mode (allow comments and spacing in regex)
           "
 
       - name: Setup Pages
