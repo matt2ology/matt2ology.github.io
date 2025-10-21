@@ -138,6 +138,9 @@ jobs:
               \$a =~ s/[^a-z0-9 ]//gi;   # Remove punctuation: keep only letters, numbers, spaces
               \$a =~ s/ /-/g;            # Replace spaces with dashes for Hugo-style anchors
 
+              # Normalize page path (if needed, to handle spaces in filenames/paths):
+              \$p =~ s/ /-/g;            # Replace spaces with dashes in the page path
+
               # Format replacement as a Hugo relref shortcode:
               # Use double quotes around the parameter (escaped as \\\" for shell + Perl)
               \"[\$t]({{< relref \\\"\$p.md#\$a\\\" >}})\"
