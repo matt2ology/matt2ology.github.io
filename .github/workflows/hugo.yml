@@ -116,36 +116,54 @@ jobs:
 
       - name: Replace wiki-style links with Hugo relref
         run: |
-          # Find all Markdown (*.md) files recursively
-          # -print0 ensures filenames are null-delimited (handles spaces safely)
-          find . -name "*.md" -print0 | xargs -0 perl -pi -e "
-            # Substitute wiki-style links with Hugo relref shortcodes
+          # Find all Markdown files recursively from the current directory.
+          # Use `-print0` to safely handle filenames with spaces or special characters.
+          find . -name "*.md" -print0 |
+
+          # Pipe results to xargs with null delimiter (-0) and apply Perl in-place edit (-pi)
+          xargs -0 perl -pi -e "
+            # Perform a regex substitution on all matches in the file
             s{
-              \[\[              # Match literal '[['
-              (.+?)             # Capture group 1: the page path, non-greedy (e.g., ../path/to/file)
-              \#                # Match literal '#'
-              (.+?)             # Capture group 2: anchor text (e.g., heading in the file)
-              \|                # Match literal '|' (separates anchor and link text)
-              (.+?)             # Capture group 3: link label (the text to display)
-              \]\]              # Match literal ']]'
+              \[\[              # Match the literal opening brackets [[
+              (.+?)             # Capture group 1: the relative page path (e.g., ../path/to/file)
+              \#                # Match literal '#' separating path from anchor
+              (.+?)             # Capture group 2: the anchor text (usually a heading)
+              \|                # Match literal pipe '|' separating anchor from label
+              (.+?)             # Capture group 3: the display text (link label)
+              \]\]              # Match the literal closing brackets ]]
             }{
-              # Assign captured values to variables
+              # Perl replacement block begins here
+
+              # Assign capture groups to meaningful variables
               my (\$path, \$anchor, \$text) = (\$1, \$2, \$3);
 
-              # Normalize the anchor for Hugo-compatible heading links:
-              \$anchor = lc(\$anchor);         # Convert to lowercase
-              \$anchor =~ s/[^a-z0-9 ]//g;     # Remove punctuation (only keep letters, digits, spaces)
-              \$anchor =~ s/ +/-/g;            # Replace spaces with hyphens (Hugo's slug logic)
+              # -------- Anchor Normalization --------
 
-              # Ensure the file path ends with .md (Hugo expects this format)
+              # Convert anchor to lowercase to match Hugo's default behavior
+              \$anchor = lc(\$anchor);
+
+              # Remove all characters except a-z, 0-9, space, and hyphen
+              # Important: this preserves hyphens (e.g., in 'project - Management')
+              \$anchor =~ s/[^a-z0-9 \-]//g;
+
+              # Replace all spaces with hyphens to mimic Hugo's slugification
+              \$anchor =~ s/ /-/g;
+
+              # -------- Path Normalization --------
+
+              # If the path doesn't already end in '.md', append it
+              # Ensures it's a valid Markdown filename for Hugo's relref
               \$path .= '.md' unless \$path =~ /\.md\$/;
 
-              # Return the final Hugo relref shortcode using the normalized path and anchor
+              # -------- Construct the Hugo relref --------
+
+              # Output the final Markdown link in Hugo's relref format:
+              # [text]({{< relref "path.md#anchor" >}})
               \"[\$text]({{< relref \\\"\$path#\$anchor\\\" >}})\"
             }gex
-            # g = global (replace all matches)
-            # e = evaluate replacement expression as Perl code
-            # x = extended mode (allow comments and spacing in regex)
+            # g = global: apply to all matches in file
+            # e = evaluate replacement as Perl code
+            # x = extended mode: allow comments and whitespace in the regex
           "
 
       - name: Setup Pages
