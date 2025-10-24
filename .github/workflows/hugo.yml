@@ -66,29 +66,16 @@ jobs:
 
       - name: Replace wiki-style links with Hugo relref
         run: |
-          # Find all Markdown files under 'content/', excluding anything in 'templates/'
-          # Then execute Perl in-place edits on each file to rewrite wiki-style links
-          # {} is replaced by file paths, '+' batches multiple files for efficiency
-          find content -type f -name "*.md" ! -path "*/templates/*" \
-            -exec perl -pi -e '
-              sub slugify { my $s=lc(shift); $s=~s/[^a-z0-9]+/-/g; $s=~s/^-|-$//g; return $s; }
+          find content -type f -name "*.md" ! -path "*/templates/*" -print0 |
+          xargs -0 perl -pi -e '
+            # Handle [[Page|Label]], [[Page#Section]], and [[Page]]
+            s/\[\[([^\]|#]+)(?:\|([^\]]+))?(?:#([^\]]+))?\]\]/
+              "[" . ($2 || $3 || $1) . "]({{< relref \"" . lc("$1.md" . ($3 ? "#$3" : "")) . "\" >}})"/ge;
 
-              # [[Page|Label]], [[Page#Section]], [[Page]]
-              s/\[\[([^\]|#]+)(?:\|([^\]]+))?(?:#([^\]]+))?\]\]/do {
-                my ($page,$label,$anchor)=($1,$2,$3);
-                $page=lc($page);
-                $anchor=defined $anchor?"#".slugify($anchor):"";
-                my $text=$label//($3?$3:$1);
-                "[$text]({{< relref \"$page.md$anchor\" >}})"
-              }/gex;
-
-              # [Label](file.md) and [Label](file.md#anchor)
-              s/\[([^\]]+)\]\(([^\)]+\.md)(?:#([^\)]+))?\)/do {
-                my ($label,$file,$anchor)=($1,$2,$3);
-                $anchor=defined $anchor?"#".slugify($anchor):"";
-                "[$label]({{< relref \"$file$anchor\" >}})"
-              }/gex;
-            ' {} +
+            # Handle [Label](file.md) and [Label](file.md#anchor)
+            s/\[([^\]]+)\]\(([^\)]+\.md(?:#[^\)]+)?)\)/
+              "[$1]({{< relref \"$2\" >}})"/ge;
+          '
 
       - name: Setup Pages
         id: pages
