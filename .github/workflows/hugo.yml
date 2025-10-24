@@ -67,32 +67,28 @@ jobs:
       - name: Replace wiki-style links with Hugo relref
         run: |
           find content -type f -name "*.md" ! -path "*/templates/*" -print0 |
-          xargs -0 perl -CS -pi -e '
+          xargs -0 perl -CS -pi -0777 -e '
+          sub hugo_slugify {
+            my $s = shift;
+            $s = lc $s;
+            $s =~ s/[^\p{L}\p{N}\s-]//g;
+            $s =~ s/\s+/-/g;
+            $s =~ s/-+/-/g;
+            $s =~ s/^-|-$//g;
+            return $s;
+          }
 
-            # Hugo-style slugify for anchors
-            # lowercase
-            # remove punctuation except letters, numbers, space, dash
-            # spaces to dash
-            # trim leading/trailing dash
-            sub hugo_slugify {
-              my $s = shift;
-              $s = lc $s;
-              $s =~ s/[^\p{L}\p{N}\s-]//g;
-              $s =~ s/\s+/-/g;
-              $s =~ s/^-|-$//g;
-              return $s;
-            }
-
-            # Convert wiki-style links: [[Page]], [[Page|Label]], [[Page#Section]], [[Page#Section|Label]]
+          while (<>) {
+            # Wiki-style links
             s/\[\[([^\]|#]+)(?:#([^\]|]+))?(?:\|([^\]]+))?\]\]/
               do {
                 my $page = lc($1) . ".md";
                 my $anchor = $2 ? "#" . hugo_slugify($2) : "";
-                my $label = $3 || $2 || $1;   # Prefer Label, then Section, then Page
+                my $label = $3 || $2 || $1;
                 "[$label]({{< relref \"" . $page . $anchor . "\" >}})"
               }/ge;
 
-            # Convert markdown-style links: [Label](file.md) or [Label](file.md#anchor)
+            # Markdown-style links
             s/\[([^\]]+)\]\(([^\)]+\.md(?:#[^\)]+)?)\)/
               do {
                 my ($label, $target) = ($1, $2);
@@ -102,6 +98,7 @@ jobs:
                 }
                 "[$label]({{< relref \"$target\" >}})"
               }/ge;
+          }
           '
 
       - name: Setup Pages
