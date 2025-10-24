@@ -47,30 +47,59 @@ jobs:
           submodules: recursive
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Convert wiki-style links to Hugo relref
+      - name: Convert Markdown & wiki-style links to Hugo shortcodes
         run: |
-          shopt -s nullglob
-          find content -type f -name "*.md" ! -path "*/templates/*" -print0 |
-          while IFS= read -r -d '' file; do
-            tmp_before=$(mktemp)
-            cp "$file" "$tmp_before"
+          shopt -s globstar nullglob
 
-            perl -CS -pi -e 'sub hugo_slugify { my $s = shift; $s=lc$s; $s=~s/[^\p{L}\p{N}\s-]//g; $s=~s/\s+/-/g; $s=~s/^-|-$//g; return $s; } s/\[\[([^\]|#]+)(?:#([^\]|]+))?(?:\|([^\]]+))?\]\]/ do { my $page = lc($1) . ".md"; my $anchor = $2 ? "#" . hugo_slugify($2) : ""; my $label = $3 || $2 || $1; "[$label]({{< relref \"" . $page . $anchor . "\" >}})" }/ge;' "$file"
+          for file in content/**/*.md; do
+            # Skip templates folder
+            [[ "$file" == content/templates/* ]] && continue
+            echo "Processing $file"
 
-            rm "$tmp_before"
-          done
+            perl -pi -e '
+              # --- [[Page|Label]] → [Label]({{< relref "page.md" >}})
+              s{
+                \[\[([^]|#]+)\|([^]]+)\]\]
+              }{
+                my ($page, $label) = ($1, $2);
+                $page = lc($page);
+                "[${label}]({{< relref \"${page}.md\" >}})"
+              }gex;
 
-      - name: Convert Markdown-style links to Hugo relref
-        run: |
-          shopt -s nullglob
-          find content -type f -name "*.md" ! -path "*/templates/*" -print0 |
-          while IFS= read -r -d '' file; do
-            tmp_before=$(mktemp)
-            cp "$file" "$tmp_before"
+              # --- [[Page#Section]] → [Section]({{< relref "page.md#section" >}})
+              s{
+                \[\[([^]|#]+)\#([^\]]+)\]\]
+              }{
+                my ($page, $anchor) = ($1, $2);
+                $page = lc($page);
+                $anchor = lc($anchor);
+                $anchor =~ s/[^a-z0-9 \-]//g;
+                $anchor =~ s/ /-/g;
+                "[${anchor}]({{< relref \"${page}.md#${anchor}\" >}})"
+              }gex;
 
-            perl -CS -pi -e 'sub hugo_slugify { my $s = shift; $s=lc$s; $s=~s/[^\p{L}\p{N}\s-]//g; $s=~s/\s+/-/g; $s=~s/^-|-$//g; return $s; } s/\[([^\]]+)\]\(([^\)]+\.md(?:#[^\)]+)?)\)/ do { my ($label, $target)=($1,$2); if($target=~/#(.*)$/){ my $anchor=hugo_slugify($1); $target=~s/#.*$/#$anchor/; } "[$label]({{< relref \"$target\" >}})" }/ge;' "$file"
+              # --- [[Page]] → [Page]({{< relref "page.md" >}})
+              s{
+                \[\[([^]|#]+)\]\]
+              }{
+                my $page = lc($1);
+                "[${1}]({{< relref \"${page}.md\" >}})"
+              }gex;
 
-            rm "$tmp_before"
+              # --- [Label](guide.md#section) → [Label]({{< relref "guide.md#section" >}})
+              s{
+                \[([^]]+)\]\(([^\)]+\.md#[^\)]+)\)
+              }{
+                "[$1]({{< relref \"$2\" >}})"
+              }gex;
+
+              # --- [Label](guide.md) → [Label]({{< relref "guide.md" >}})
+              s{
+                \[([^]]+)\]\(([^\)]+\.md)\)
+              }{
+                "[$1]({{< relref \"$2\" >}})"
+              }gex;
+            ' "$file"
           done
 
       - name: Setup Pages
