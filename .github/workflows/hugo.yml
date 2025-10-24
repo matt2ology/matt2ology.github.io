@@ -47,53 +47,62 @@ jobs:
           submodules: recursive
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Convert Markdown & wiki-style links to Hugo relref
+      - name: Convert markdown and wiki-style links to Hugo relref shortcodes
         run: |
-          find content -name "*.md" -print0 |
-          xargs -0 perl -pi -e "
-            # [[Page|Label]] → [Label]({{< relref \"page.md\" >}})
+          shopt -s globstar nullglob
+
+          echo "🔍 Converting links in Markdown files..."
+
+          find content -type f -name "*.md" ! -path "content/templates/*" -print0 |
+          xargs -0 perl -pi -e '
+            # --- Convert [[Page|Label]] → [Label]({{< relref "page.md" >}})
             s{
               \[\[([^]|#]+)\|([^]]+)\]\]
             }{
-              my (\$page, \$label)=(\$1,\$2);
-              \$page=lc(\$page);
-              \"[\$label]({{< relref \\\"\$page.md\\\" >}})\"
+              my ($path, $text) = ($1, $2);
+              $path = lc($path);
+              $path .= ".md" unless $path =~ /\.md$/;
+              "[$text]({{< relref \"$path\" >}})"
             }gex;
 
-            # [[Page#Section]] → [Section]({{< relref \"page.md#section\" >}})
+            # --- Convert [[Page#Section]] → [Section]({{< relref "page.md#section" >}})
             s{
-              \[\[([^]|#]+)\#([^\]]+)\]\]
+              \[\[([^]|#]+)#([^\]]+)\]\]
             }{
-              my (\$page,\$anchor)=(\$1,\$2);
-              \$page=lc(\$page);
-              \$anchor=lc(\$anchor);
-              \$anchor=~s/[^a-z0-9 \\-]//g;
-              \$anchor=~s/ /-/g;
-              \"[\$anchor]({{< relref \\\"\$page.md#\$anchor\\\" >}})\"
+              my ($path, $anchor) = ($1, $2);
+              $path = lc($path);
+              $anchor = lc($anchor);
+              $anchor =~ s/[^a-z0-9 \-]//g;
+              $anchor =~ s/ /-/g;
+              $path .= ".md" unless $path =~ /\.md$/;
+              "[$anchor]({{< relref \"$path#$anchor\" >}})"
             }gex;
 
-            # [[Page]] → [Page]({{< relref \"page.md\" >}})
+            # --- Convert [[Page]] → [Page]({{< relref "page.md" >}})
             s{
               \[\[([^]|#]+)\]\]
             }{
-              my \$page=lc(\$1);
-              \"[\$1]({{< relref \\\"\$page.md\\\" >}})\"
+              my $path = lc($1);
+              $path .= ".md" unless $path =~ /\.md$/;
+              "[$1]({{< relref \"$path\" >}})"
             }gex;
 
-            # [Label](guide.md#section) → [Label]({{< relref \"guide.md#section\" >}})
+            # --- Convert [Label](file.md#anchor) → [Label]({{< relref "file.md#anchor" >}})
             s{
               \[([^]]+)\]\(([^)]+\.md#[^)]+)\)
             }{
-              \"[\$1]({{< relref \\\"\$2\\\" >}})\"
+              "[$1]({{< relref \"$2\" >}})"
             }gex;
 
-            # [Label](guide.md) → [Label]({{< relref \"guide.md\" >}})
+            # --- Convert [Label](file.md) → [Label]({{< relref "file.md" >}})
             s{
               \[([^]]+)\]\(([^)]+\.md)\)
             }{
-              \"[\$1]({{< relref \\\"\$2\\\" >}})\"
+              "[$1]({{< relref \"$2\" >}})"
             }gex;
-          "
+          '
+
+          echo "✅ Conversion complete."
 
       - name: Setup Pages
         id: pages
