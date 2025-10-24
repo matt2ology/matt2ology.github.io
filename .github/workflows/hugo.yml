@@ -67,39 +67,40 @@ jobs:
       - name: Replace wiki-style links with Hugo relref
         run: |
           find content -type f -name "*.md" ! -path "*/templates/*" -print0 |
-          xargs -0 perl -CS -pi -0777 -e '
+          xargs -0 perl -CS -pi -0777 <<'PERL_SCRIPT'
+
           sub hugo_slugify {
-            my $s = shift;
-            $s = lc $s;
-            $s =~ s/[^\p{L}\p{N}\s-]//g;
-            $s =~ s/\s+/-/g;
-            $s =~ s/-+/-/g;
-            $s =~ s/^-|-$//g;
-            return $s;
+              my $s = shift;
+              $s = lc $s;
+              $s =~ s/[^\p{L}\p{N}\s-]//g;
+              $s =~ s/\s+/-/g;
+              $s =~ s/-+/-/g;
+              $s =~ s/^-|-$//g;
+              return $s;
           }
 
           while (<>) {
-            # Wiki-style links
-            s/\[\[([^\]|#]+)(?:#([^\]|]+))?(?:\|([^\]]+))?\]\]/
-              do {
-                my $page = lc($1) . ".md";
-                my $anchor = $2 ? "#" . hugo_slugify($2) : "";
-                my $label = $3 || $2 || $1;
-                "[$label]({{< relref \"" . $page . $anchor . "\" >}})"
-              }/ge;
+              # Wiki-style links
+              s/\[\[([^\]|#]+)(?:#([^\]|]+))?(?:\|([^\]]+))?\]\]/
+                  do {
+                      my $page = lc($1) . ".md";
+                      my $anchor = $2 ? "#" . hugo_slugify($2) : "";
+                      my $label = $3 || $2 || $1;
+                      "[$label]({{< relref \"" . $page . $anchor . "\" >}})"
+                  }/ge;
 
-            # Markdown-style links
-            s/\[([^\]]+)\]\(([^\)]+\.md(?:#[^\)]+)?)\)/
-              do {
-                my ($label, $target) = ($1, $2);
-                if ($target =~ /#(.*)$/) {
-                  my $anchor = hugo_slugify($1);
-                  $target =~ s/#.*$/#$anchor/;
-                }
-                "[$label]({{< relref \"$target\" >}})"
-              }/ge;
+              # Markdown-style links
+              s/\[([^\]]+)\]\(([^\)]+\.md(?:#[^\)]+)?)\)/
+                  do {
+                      my ($label, $target) = ($1, $2);
+                      if ($target =~ /#(.*)$/) {
+                          my $anchor = hugo_slugify($1);
+                          $target =~ s/#.*$/#$anchor/;
+                      }
+                      "[$label]({{< relref \"$target\" >}})"
+                  }/ge;
           }
-          '
+          PERL_SCRIPT
 
       - name: Setup Pages
         id: pages
