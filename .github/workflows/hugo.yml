@@ -70,17 +70,21 @@ jobs:
           xargs -0 perl -CS -pi -e '
 
             # Hugo-style slugify for anchors
+            # lowercase
+            # remove punctuation except letters, numbers, space, dash
+            # spaces to dash
+            # trim leading/trailing dash
             sub hugo_slugify {
               my $s = shift;
-              $s = lc $s;                 # lowercase
-              $s =~ s/[^\p{L}\p{N}\s-]//g; # remove punctuation except letters, numbers, space, dash
-              $s =~ s/\s+/-/g;            # spaces to dash
-              $s =~ s/^-|-$//g;           # trim leading/trailing dash
+              $s = lc $s;
+              $s =~ s/[^\p{L}\p{N}\s-]//g;
+              $s =~ s/\s+/-/g;
+              $s =~ s/^-|-$//g;
               return $s;
             }
 
             # Convert wiki-style links: [[Page]], [[Page|Label]], [[Page#Section]], [[Page#Section|Label]]
-            s/\[\[([^\]|#]+)(?:#([^\]|]+))?(?:\|([^\]]+))?\]\]/ 
+            s/\[\[([^\]|#]+)(?:#([^\]|]+))?(?:\|([^\]]+))?\]\]/
               do {
                 my $page = lc($1) . ".md";
                 my $anchor = $2 ? "#" . hugo_slugify($2) : "";
@@ -89,7 +93,7 @@ jobs:
               }/ge;
 
             # Convert markdown-style links: [Label](file.md) or [Label](file.md#anchor)
-            s/\[([^\]]+)\]\(([^\)]+\.md(?:#[^\)]+)?)\)/ 
+            s/\[([^\]]+)\]\(([^\)]+\.md(?:#[^\)]+)?)\)/
               do {
                 my ($label, $target) = ($1, $2);
                 if ($target =~ /#(.*)$/) {
