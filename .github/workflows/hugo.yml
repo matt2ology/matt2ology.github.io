@@ -46,23 +46,6 @@ jobs:
         with:
           submodules: recursive
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Update submodules to latest commit on main branch
-        run: |
-          git submodule sync --recursive
-          git submodule deinit --all --force
-          git submodule update --init --recursive
-          git submodule update --remote content  # This fetches the latest commit for the content submodule
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add content
-          if git diff --cached --quiet; then
-            echo "No submodule changes to commit"
-          else
-            echo "Submodule changes detected. Committing..."
-            git commit -m "chore: sync content from notes repo"
-            git push origin HEAD:main
-            echo "Changes pushed to main branch"
-          fi
 
 <<<<<<< HEAD
       - name: Convert markdown links to Hugo shortcodes
@@ -81,19 +64,6 @@ jobs:
             # Make a temp copy for diffing
             before=$(mktemp)
             cp "$file" "$before"
-
-            # Convert various Markdown and wiki-style links into Hugo-compatible relative reference shortcodes
-            # Convert wiki-style links with label ([[Page|Label]]) into Hugo relref shortcodes:
-            # Example: [[MyPage|Click here]] → [Click here]({{< relref "mypage.md" >}})
-            sed -i -E 's/\[\[([^]|#]+)\|([^]]+)\]\]/[\2]({{< relref "\L\1.md" >}})/g' "$file"
-
-            # Convert wiki-style links with section ([[Page#Section]]) into Hugo relref with anchor:
-            # Example: [[MyPage#section]] → [section]({{< relref "mypage.md#section" >}})
-            sed -i -E 's/\[\[([^]|#]+)#([^\]]+)\]\]/[\2]({{< relref "\L\1.md#\2" >}})/g' "$file"
-
-            # Convert simple wiki-style links ([[Page]]) into Hugo relref shortcodes:
-            # Example: [[MyPage]] → [MyPage]({{< relref "mypage.md" >}})
-            sed -i -E 's/\[\[([^]|#]+)\]\]/[\1]({{< relref "\L\1.md" >}})/g' "$file"
 
             # Convert Markdown links to sections in .md files into Hugo relref format:
             # Example: [Intro](guide.md#start) → [Intro]({{< relref "guide.md#start" >}})
