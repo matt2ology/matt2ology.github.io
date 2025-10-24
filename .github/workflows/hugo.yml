@@ -52,7 +52,6 @@ jobs:
           shopt -s globstar nullglob
 
           for file in content/**/*.md; do
-            # Skip templates folder
             [[ "$file" == content/templates/* ]] && continue
             echo "Processing $file"
 
@@ -88,14 +87,14 @@ jobs:
 
               # --- [Label](guide.md#section) → [Label]({{< relref "guide.md#section" >}})
               s{
-                \[([^]]+)\]\(([^\)]+\.md#[^\)]+)\)
+                \[([^]]+)\]\( ([^()]+\.md#[^()]+) \)
               }{
                 "[$1]({{< relref \"$2\" >}})"
               }gex;
 
               # --- [Label](guide.md) → [Label]({{< relref "guide.md" >}})
               s{
-                \[([^]]+)\]\(([^\)]+\.md)\)
+                \[([^]]+)\]\( ([^()]+\.md) \)
               }{
                 "[$1]({{< relref \"$2\" >}})"
               }gex;
