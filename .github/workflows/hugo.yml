@@ -64,6 +64,7 @@ jobs:
             echo "Changes pushed to main branch"
           fi
 
+<<<<<<< HEAD
       - name: Convert markdown links to Hugo shortcodes
         run: |
           shopt -s globstar nullglob
@@ -116,6 +117,10 @@ jobs:
 
       - name: Replace wiki-style links with Hugo relref
         run: |
+=======
+      - name: Replace wiki-style links with Hugo relref
+        run: |
+>>>>>>> ba53f4f (Replace wiki-style links with Hugo `relref`)
           find . -name "*.md" -print0 |
           xargs -0 perl -pi -e "
             s{
