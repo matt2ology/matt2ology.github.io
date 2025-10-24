@@ -47,6 +47,43 @@ jobs:
           submodules: recursive
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Convert markdown links to Hugo shortcodes
+        run: |
+          shopt -s globstar nullglob
+          changes=()  # list to store all changes across files
+
+          for file in content/**/*.md; do
+            # skip templates folder
+            if [[ "$file" == content/templates/* ]]; then
+              continue
+            fi
+
+            echo "Processing $file"
+
+            # Make a temp copy for diffing
+            before=$(mktemp)
+            cp "$file" "$before"
+
+            # Convert Markdown links to sections in .md files into Hugo relref format:
+            # Example: [Intro](guide.md#start) → [Intro]({{< relref "guide.md#start" >}})
+            sed -i -E 's/\[([^]]+)\]\(([^\)]+\.md#[^\)]+)\)/[\1]({{< relref "\2" >}})/g' "$file"
+
+            # Convert standard Markdown links to .md files into Hugo relref format:
+            # Example: [Guide](guide.md) → [Guide]({{< relref "guide.md" >}})
+            sed -i -E 's/\[([^]]+)\]\(([^\)]+\.md)\)/[\1]({{< relref "\2" >}})/g' "$file"
+
+            # Collect changes by comparing before vs after
+            while IFS= read -r line_before && IFS= read -r line_after <&3; do
+              if [[ "$line_before" != "$line_after" ]]; then
+                changes+=("File: $file")
+                changes+=("Original: $line_before")
+                changes+=("Converted: $line_after")
+              fi
+            done <"$before" 3<"$file"
+
+            rm "$before"
+          done
+
       - name: Replace wiki-style links with Hugo relref
         run: |
           find . -name "*.md" -print0 |
