@@ -57,45 +57,35 @@ jobs:
 
             perl -pi -e '
               # --- [[Page|Label]] → [Label]({{< relref "page.md" >}})
-              s{
-                \[\[([^]|#]+)\|([^]]+)\]\]
-              }{
-                my ($page, $label) = ($1, $2);
-                $page = lc($page);
+              s{\[\[([^]|#]+)\|([^]]+)\]\]}{
+                my ($page, $label)=($1,$2);
+                $page=lc($page);
                 "[${label}]({{< relref \"${page}.md\" >}})"
               }gex;
 
               # --- [[Page#Section]] → [Section]({{< relref "page.md#section" >}})
-              s{
-                \[\[([^]|#]+)\#([^\]]+)\]\]
-              }{
-                my ($page, $anchor) = ($1, $2);
-                $page = lc($page);
-                $anchor = lc($anchor);
-                $anchor =~ s/[^a-z0-9 \-]//g;
-                $anchor =~ s/ /-/g;
+              s{\[\[([^]|#]+)\#([^\]]+)\]\]}{
+                my ($page,$anchor)=($1,$2);
+                $page=lc($page);
+                $anchor=lc($anchor);
+                $anchor=~s/[^a-z0-9 \-]//g;
+                $anchor=~s/ /-/g;
                 "[${anchor}]({{< relref \"${page}.md#${anchor}\" >}})"
               }gex;
 
               # --- [[Page]] → [Page]({{< relref "page.md" >}})
-              s{
-                \[\[([^]|#]+)\]\]
-              }{
-                my $page = lc($1);
+              s{\[\[([^]|#]+)\]\]}{
+                my $page=lc($1);
                 "[${1}]({{< relref \"${page}.md\" >}})"
               }gex;
 
               # --- [Label](guide.md#section) → [Label]({{< relref "guide.md#section" >}})
-              s{
-                \[([^]]+)\]\( ([^()]+\.md#[^()]+) \)
-              }{
+              s{\[([^]]+)\]\(([^)]+\.md#[^)]+)\)}{
                 "[$1]({{< relref \"$2\" >}})"
               }gex;
 
               # --- [Label](guide.md) → [Label]({{< relref "guide.md" >}})
-              s{
-                \[([^]]+)\]\( ([^()]+\.md) \)
-              }{
+              s{\[([^]]+)\]\(([^)]+\.md)\)}{
                 "[$1]({{< relref \"$2\" >}})"
               }gex;
             ' "$file"
