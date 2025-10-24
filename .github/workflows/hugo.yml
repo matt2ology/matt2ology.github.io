@@ -64,87 +64,52 @@ jobs:
             echo "Changes pushed to main branch"
           fi
 
-      - name: Convert markdown links to Hugo shortcodes
-        run: |
-          shopt -s globstar nullglob
-          changes=()  # list to store all changes across files
-
-          for file in content/**/*.md; do
-            # skip templates folder
-            if [[ "$file" == content/templates/* ]]; then
-              continue
-            fi
-
-            echo "Processing $file"
-
-            # Make a temp copy for diffing
-            before=$(mktemp)
-            cp "$file" "$before"
-
-            # Convert various Markdown and wiki-style links into Hugo-compatible relative reference shortcodes
-            # Convert wiki-style links with label ([[Page|Label]]) into Hugo relref shortcodes:
-            # Example: [[MyPage|Click here]] → [Click here]({{< relref "mypage.md" >}})
-            sed -i -E 's/\[\[([^]|#]+)\|([^]]+)\]\]/[\2]({{< relref "\L\1.md" >}})/g' "$file"
-
-            # Convert wiki-style links with section ([[Page#Section]]) into Hugo relref with anchor:
-            # Example: [[MyPage#section]] → [section]({{< relref "mypage.md#section" >}})
-            sed -i -E 's/\[\[([^]|#]+)#([^\]]+)\]\]/[\2]({{< relref "\L\1.md#\2" >}})/g' "$file"
-
-            # Convert simple wiki-style links ([[Page]]) into Hugo relref shortcodes:
-            # Example: [[MyPage]] → [MyPage]({{< relref "mypage.md" >}})
-            sed -i -E 's/\[\[([^]|#]+)\]\]/[\1]({{< relref "\L\1.md" >}})/g' "$file"
-
-            # Convert Markdown links to sections in .md files into Hugo relref format:
-            # Example: [Intro](guide.md#start) → [Intro]({{< relref "guide.md#start" >}})
-            sed -i -E 's/\[([^]]+)\]\(([^\)]+\.md#[^\)]+)\)/[\1]({{< relref "\2" >}})/g' "$file"
-
-            # Convert standard Markdown links to .md files into Hugo relref format:
-            # Example: [Guide](guide.md) → [Guide]({{< relref "guide.md" >}})
-            sed -i -E 's/\[([^]]+)\]\(([^\)]+\.md)\)/[\1]({{< relref "\2" >}})/g' "$file"
-
-            # Collect changes by comparing before vs after
-            while IFS= read -r line_before && IFS= read -r line_after <&3; do
-              if [[ "$line_before" != "$line_after" ]]; then
-                changes+=("File: $file")
-                changes+=("Original: $line_before")
-                changes+=("Converted: $line_after")
-              fi
-            done <"$before" 3<"$file"
-
-            rm "$before"
-          done
-
       - name: Replace wiki-style links with Hugo relref
         run: |
-          find . -name "*.md" -print0 |
-          xargs -0 perl -pi -e "
-            s{
-              \[\[              # [[
-              (.+?)             # group 1: path
-              \#                # #
-              (.+?)             # group 2: anchor text
-              \|                # |
-              (.+?)             # group 3: label
-              \]\]              # ]]
-            }{
-              my (\$path, \$anchor, \$text) = (\$1, \$2, \$3);
+          # Find all Markdown files under 'content/', excluding anything in 'templates/'
+          find content -type f -name "*.md" ! -path "*/templates/*" \
+            # For each file found, run the following Perl code in place (-pi)
+            -exec perl -pi -e '
+              #---------------------------------------------------------------
+              # Helper: slugify() converts section titles into Hugo-friendly slugs
+              # Example: "Getting Started!" -> "getting-started"
+              #---------------------------------------------------------------
+              sub slugify {
+                my $s = lc(shift);           # Convert to lowercase
+                $s =~ s/[^a-z0-9]+/-/g;      # Replace non-alphanumeric with hyphens
+                $s =~ s/^-|-$//g;            # Trim leading/trailing hyphens
+                return $s;                   # Return normalized string
+              }
 
-              # Lowercase the anchor
-              \$anchor = lc(\$anchor);
+              #---------------------------------------------------------------
+              # Convert wiki-style links of the form:
+              #   [[Page|Label]]   -> [Label]({{< relref "page.md" >}})
+              #   [[Page#Section]] -> [Section]({{< relref "page.md#section" >}})
+              #   [[Page]]         -> [Page]({{< relref "page.md" >}})
+              #---------------------------------------------------------------
+              s{
+                \[\[([^\]|#]+)(?:\|([^\]]+))?(?:#([^\]]+))?\]\]  # Match wiki link variants
+              }{
+                my ($page, $label, $anchor) = ($1, $2, $3);      # Capture page, label, anchor
+                $page = lc($page);                               # Lowercase page filename
+                $anchor = defined $anchor ? "#" . slugify($anchor) : "";  # Slugify anchor if present
+                my $text = $label // ($3 ? $3 : $1);             # Use label if given, else anchor, else page name
+                "[$text]({{< relref \"$page.md$anchor\" >}})"    # Build Hugo relref link
+              }gex;
 
-              # Remove unwanted characters EXCEPT hyphens and spaces
-              \$anchor =~ s/[^a-z0-9 \-]//g;
-
-              # Replace each space with a hyphen (important: preserves multiple hyphens)
-              \$anchor =~ s/ /-/g;
-
-              # If the path doesn't already end with .md, append it
-              \$path .= '.md' unless \$path =~ /\.md\$/;
-
-              # Final output
-              \"[\$text]({{< relref \\\"\$path#\$anchor\\\" >}})\"
-            }gex
-          "
+              #---------------------------------------------------------------
+              # Convert normal Markdown links pointing to .md files into relrefs:
+              #   [Label](file.md)        -> [Label]({{< relref "file.md" >}})
+              #   [Label](file.md#anchor) -> [Label]({{< relref "file.md#anchor" >}})
+              #---------------------------------------------------------------
+              s{
+                \[([^\]]+)\]\(([^\)]+\.md)(?:#([^\)]+))?\)       # Match Markdown links to .md files
+              }{
+                my ($label, $file, $anchor) = ($1, $2, $3);      # Capture label, file, anchor
+                $anchor = defined $anchor ? "#" . slugify($anchor) : "";  # Slugify anchor if present
+                "[$label]({{< relref \"$file$anchor\" >}})"      # Replace with Hugo relref link
+              }gex;
+            ' {} +  # {} is replaced by file paths, '+' batches multiple files for efficiency
 
       - name: Setup Pages
         id: pages
