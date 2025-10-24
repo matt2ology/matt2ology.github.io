@@ -67,14 +67,37 @@ jobs:
       - name: Replace wiki-style links with Hugo relref
         run: |
           find content -type f -name "*.md" ! -path "*/templates/*" -print0 |
-          xargs -0 perl -pi -e '
-            # Handle [[Page|Label]], [[Page#Section]], and [[Page]]
-            s/\[\[([^\]|#]+)(?:\|([^\]]+))?(?:#([^\]]+))?\]\]/
-              "[" . ($2 || $3 || $1) . "]({{< relref \"" . lc("$1.md" . ($3 ? "#$3" : "")) . "\" >}})"/ge;
+          xargs -0 perl -CS -pi -e '
 
-            # Handle [Label](file.md) and [Label](file.md#anchor)
-            s/\[\[([^\]|#]+)(?:\|([^\]]+))?(?:#([^\]]+))?\]\]/
-              "[" . ($2 || $3 || $1) . "]({{< relref \"" . lc("$1.md" . ($3 ? "%23$3" : "")) . "\" >}})"/ge;
+            # Hugo-style slugify for anchors
+            sub hugo_slugify {
+              my $s = shift;
+              $s = lc $s;                 # lowercase
+              $s =~ s/[^\p{L}\p{N}\s-]//g; # remove punctuation except letters, numbers, space, dash
+              $s =~ s/\s+/-/g;            # spaces to dash
+              $s =~ s/^-|-$//g;           # trim leading/trailing dash
+              return $s;
+            }
+
+            # Convert wiki-style links: [[Page]], [[Page|Label]], [[Page#Section]], [[Page#Section|Label]]
+            s/\[\[([^\]|#]+)(?:#([^\]|]+))?(?:\|([^\]]+))?\]\]/ 
+              do {
+                my $page = lc($1) . ".md";
+                my $anchor = $2 ? "#" . hugo_slugify($2) : "";
+                my $label = $3 || $2 || $1;   # Prefer Label, then Section, then Page
+                "[$label]({{< relref \"" . $page . $anchor . "\" >}})"
+              }/ge;
+
+            # Convert markdown-style links: [Label](file.md) or [Label](file.md#anchor)
+            s/\[([^\]]+)\]\(([^\)]+\.md(?:#[^\)]+)?)\)/ 
+              do {
+                my ($label, $target) = ($1, $2);
+                if ($target =~ /#(.*)$/) {
+                  my $anchor = hugo_slugify($1);
+                  $target =~ s/#.*$/#$anchor/;
+                }
+                "[$label]({{< relref \"$target\" >}})"
+              }/ge;
           '
 
       - name: Setup Pages
