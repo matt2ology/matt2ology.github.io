@@ -71,45 +71,23 @@ jobs:
           # {} is replaced by file paths, '+' batches multiple files for efficiency
           find content -type f -name "*.md" ! -path "*/templates/*" \
             -exec perl -pi -e '
-              #---------------------------------------------------------------
-              # Helper: slugify() converts section titles into Hugo-friendly slugs
-              # Example: "Getting Started!" -> "getting-started"
-              #---------------------------------------------------------------
-              sub slugify {
-                my $s = lc(shift);           # Convert to lowercase
-                $s =~ s/[^a-z0-9]+/-/g;      # Replace non-alphanumeric with hyphens
-                $s =~ s/^-|-$//g;            # Trim leading/trailing hyphens
-                return $s;                   # Return normalized string
-              }
+              sub slugify { my $s=lc(shift); $s=~s/[^a-z0-9]+/-/g; $s=~s/^-|-$//g; return $s; }
 
-              #---------------------------------------------------------------
-              # Convert wiki-style links:
-              #   [[Page|Label]]   -> [Label]({{< relref "page.md" >}})
-              #   [[Page#Section]] -> [Section]({{< relref "page.md#section" >}})
-              #   [[Page]]         -> [Page]({{< relref "page.md" >}})
-              #---------------------------------------------------------------
-              s{
-                \[\[([^\]|#]+)(?:\|([^\]]+))?(?:#([^\]]+))?\]\]
-              }{
-                my ($page, $label, $anchor) = ($1, $2, $3);
-                $page = lc($page);
-                $anchor = defined $anchor ? "#" . slugify($anchor) : "";
-                my $text = $label // ($3 ? $3 : $1);
+              # [[Page|Label]], [[Page#Section]], [[Page]]
+              s/\[\[([^\]|#]+)(?:\|([^\]]+))?(?:#([^\]]+))?\]\]/do {
+                my ($page,$label,$anchor)=($1,$2,$3);
+                $page=lc($page);
+                $anchor=defined $anchor?"#".slugify($anchor):"";
+                my $text=$label//($3?$3:$1);
                 "[$text]({{< relref \"$page.md$anchor\" >}})"
-              }gex;
+              }/gex;
 
-              #---------------------------------------------------------------
-              # Convert Markdown .md links into Hugo relrefs:
-              #   [Label](file.md)        -> [Label]({{< relref "file.md" >}})
-              #   [Label](file.md#anchor) -> [Label]({{< relref "file.md#anchor" >}})
-              #---------------------------------------------------------------
-              s{
-                \[([^\]]+)\]\(([^\)]+\.md)(?:#([^\)]+))?\)
-              }{
-                my ($label, $file, $anchor) = ($1, $2, $3);
-                $anchor = defined $anchor ? "#" . slugify($anchor) : "";
+              # [Label](file.md) and [Label](file.md#anchor)
+              s/\[([^\]]+)\]\(([^\)]+\.md)(?:#([^\)]+))?\)/do {
+                my ($label,$file,$anchor)=($1,$2,$3);
+                $anchor=defined $anchor?"#".slugify($anchor):"";
                 "[$label]({{< relref \"$file$anchor\" >}})"
-              }gex;
+              }/gex;
             ' {} +
 
       - name: Setup Pages
