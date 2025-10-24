@@ -46,61 +46,73 @@ jobs:
         with:
           submodules: recursive
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Update submodules to latest commit on main branch
-        run: |
-          git submodule sync --recursive
-          git submodule deinit --all --force
-          git submodule update --init --recursive
-          git submodule update --remote content  # This fetches the latest commit for the content submodule
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add content
-          if git diff --cached --quiet; then
-            echo "No submodule changes to commit"
-          else
-            echo "Submodule changes detected. Committing..."
-            git commit -m "chore: sync content from notes repo"
-            git push origin HEAD:main
-            echo "Changes pushed to main branch"
-          fi
 
-      - name: Replace wiki-style links with Hugo relref
+      - name: Convert wiki-style and Markdown links to Hugo relref
         run: |
+          # Enable nullglob so patterns with no matches expand to nothing
+          shopt -s nullglob
+
+          # Array to collect changed files
+          changed_files=()
+
+          # Process all Markdown files except templates
           find content -type f -name "*.md" ! -path "*/templates/*" -print0 |
-          xargs -0 perl -CS -pi -0777 <<'PERL_SCRIPT'
+          while IFS= read -r -d '' file; do
+            # Backup original file for diffing
+            tmp_before=$(mktemp)
+            cp "$file" "$tmp_before"
 
-          sub hugo_slugify {
-              my $s = shift;
-              $s = lc $s;
-              $s =~ s/[^\p{L}\p{N}\s-]//g;
-              $s =~ s/\s+/-/g;
-              $s =~ s/-+/-/g;
-              $s =~ s/^-|-$//g;
-              return $s;
-          }
+            # Use Perl to handle wiki-style and Markdown links
+            perl -CS -pi -e '
 
-          while (<>) {
-              # Wiki-style links
-              s/\[\[([^\]|#]+)(?:#([^\]|]+))?(?:\|([^\]]+))?\]\]/
-                  do {
-                      my $page = lc($1) . ".md";
-                      my $anchor = $2 ? "#" . hugo_slugify($2) : "";
-                      my $label = $3 || $2 || $1;
-                      "[$label]({{< relref \"" . $page . $anchor . "\" >}})"
-                  }/ge;
+              # Hugo-style slugify for anchors
+              sub hugo_slugify {
+                my $s = shift;
+                $s = lc $s;                     # lowercase
+                $s =~ s/[^\p{L}\p{N}\s-]//g;   # remove punctuation except letters, numbers, space, dash
+                $s =~ s/\s+/-/g;               # spaces to dash
+                $s =~ s/^-|-$//g;              # trim leading/trailing dash
+                return $s;
+              }
 
-              # Markdown-style links
-              s/\[([^\]]+)\]\(([^\)]+\.md(?:#[^\)]+)?)\)/
-                  do {
-                      my ($label, $target) = ($1, $2);
-                      if ($target =~ /#(.*)$/) {
-                          my $anchor = hugo_slugify($1);
-                          $target =~ s/#.*$/#$anchor/;
-                      }
-                      "[$label]({{< relref \"$target\" >}})"
-                  }/ge;
-          }
-          PERL_SCRIPT
+              # Convert wiki-style links: [[Page]], [[Page|Label]], [[Page#Section]], [[Page#Section|Label]]
+              s/\[\[([^\]|#]+)(?:#([^\]|]+))?(?:\|([^\]]+))?\]\]/ 
+                do {
+                  my $page = lc($1) . ".md";
+                  my $anchor = $2 ? "#" . hugo_slugify($2) : "";
+                  my $label = $3 || $2 || $1;   # Prefer Label, then Section, then Page
+                  "[$label]({{< relref \"" . $page . $anchor . "\" >}})"
+                }/ge;
+
+              # Convert markdown-style links: [Label](file.md) or [Label](file.md#anchor)
+              s/\[([^\]]+)\]\(([^\)]+\.md(?:#[^\)]+)?)\)/ 
+                do {
+                  my ($label, $target) = ($1, $2);
+                  if ($target =~ /#(.*)$/) {
+                    my $anchor = hugo_slugify($1);
+                    $target =~ s/#.*$/#$anchor/;
+                  }
+                  "[$label]({{< relref \"$target\" >}})"
+                }/ge;
+            ' "$file"
+
+            # Check if file changed
+            if ! cmp -s "$file" "$tmp_before"; then
+              changed_files+=("$file")
+            fi
+
+            rm "$tmp_before"
+          done
+
+          # Print summary
+          if [ ${#changed_files[@]} -eq 0 ]; then
+            echo "No Markdown files were changed."
+          else
+            echo "Converted links in the following files:"
+            for f in "${changed_files[@]}"; do
+              echo "- $f"
+            done
+          fi
 
       - name: Setup Pages
         id: pages
