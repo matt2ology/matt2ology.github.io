@@ -47,62 +47,37 @@ jobs:
           submodules: recursive
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Convert markdown and wiki-style links to Hugo relref shortcodes
+      - name: Replace wiki-style links with Hugo relref
         run: |
-          shopt -s globstar nullglob
-
-          echo "🔍 Converting links in Markdown files..."
-
-          find content -type f -name "*.md" ! -path "content/templates/*" -print0 |
-          xargs -0 perl -pi -e '
-            # --- Convert [[Page|Label]] → [Label]({{< relref "page.md" >}})
+          find . -name "*.md" -print0 |
+          xargs -0 perl -pi -e "
             s{
-              \[\[([^]|#]+)\|([^]]+)\]\]
+              \[\[              # [[
+              (.+?)             # group 1: path
+              \#                # #
+              (.+?)             # group 2: anchor text
+              \|                # |
+              (.+?)             # group 3: label
+              \]\]              # ]]
             }{
-              my ($path, $text) = ($1, $2);
-              $path = lc($path);
-              $path .= ".md" unless $path =~ /\.md$/;
-              "[$text]({{< relref \"$path\" >}})"
-            }gex;
+              my (\$path, \$anchor, \$text) = (\$1, \$2, \$3);
 
-            # --- Convert [[Page#Section]] → [Section]({{< relref "page.md#section" >}})
-            s{
-              \[\[([^]|#]+)#([^\]]+)\]\]
-            }{
-              my ($path, $anchor) = ($1, $2);
-              $path = lc($path);
-              $anchor = lc($anchor);
-              $anchor =~ s/[^a-z0-9 \-]//g;
-              $anchor =~ s/ /-/g;
-              $path .= ".md" unless $path =~ /\.md$/;
-              "[$anchor]({{< relref \"$path#$anchor\" >}})"
-            }gex;
+              # Lowercase the anchor
+              \$anchor = lc(\$anchor);
 
-            # --- Convert [[Page]] → [Page]({{< relref "page.md" >}})
-            s{
-              \[\[([^]|#]+)\]\]
-            }{
-              my $path = lc($1);
-              $path .= ".md" unless $path =~ /\.md$/;
-              "[$1]({{< relref \"$path\" >}})"
-            }gex;
+              # Remove unwanted characters EXCEPT hyphens and spaces
+              \$anchor =~ s/[^a-z0-9 \-]//g;
 
-            # --- Convert [Label](file.md#anchor) → [Label]({{< relref "file.md#anchor" >}})
-            s{
-              \[([^]]+)\]\(([^)]+\.md#[^)]+)\)
-            }{
-              "[$1]({{< relref \"$2\" >}})"
-            }gex;
+              # Replace each space with a hyphen (important: preserves multiple hyphens)
+              \$anchor =~ s/ /-/g;
 
-            # --- Convert [Label](file.md) → [Label]({{< relref "file.md" >}})
-            s{
-              \[([^]]+)\]\(([^)]+\.md)\)
-            }{
-              "[$1]({{< relref \"$2\" >}})"
-            }gex;
-          '
+              # If the path doesn't already end with .md, append it
+              \$path .= '.md' unless \$path =~ /\.md\$/;
 
-          echo "✅ Conversion complete."
+              # Final output
+              \"[\$text]({{< relref \\\"\$path#\$anchor\\\" >}})\"
+            }gex
+          "
 
       - name: Setup Pages
         id: pages
