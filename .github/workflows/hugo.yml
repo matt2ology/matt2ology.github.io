@@ -47,49 +47,53 @@ jobs:
           submodules: recursive
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Convert Markdown & wiki-style links to Hugo shortcodes
+      - name: Convert Markdown & wiki-style links to Hugo relref
         run: |
-          shopt -s globstar nullglob
+          find content -name "*.md" -print0 |
+          xargs -0 perl -pi -e "
+            # [[Page|Label]] → [Label]({{< relref \"page.md\" >}})
+            s{
+              \[\[([^]|#]+)\|([^]]+)\]\]
+            }{
+              my (\$page, \$label)=(\$1,\$2);
+              \$page=lc(\$page);
+              \"[\$label]({{< relref \\\"\$page.md\\\" >}})\"
+            }gex;
 
-          for file in content/**/*.md; do
-            [[ "$file" == content/templates/* ]] && continue
-            echo "Processing $file"
+            # [[Page#Section]] → [Section]({{< relref \"page.md#section\" >}})
+            s{
+              \[\[([^]|#]+)\#([^\]]+)\]\]
+            }{
+              my (\$page,\$anchor)=(\$1,\$2);
+              \$page=lc(\$page);
+              \$anchor=lc(\$anchor);
+              \$anchor=~s/[^a-z0-9 \\-]//g;
+              \$anchor=~s/ /-/g;
+              \"[\$anchor]({{< relref \\\"\$page.md#\$anchor\\\" >}})\"
+            }gex;
 
-            perl -pi -e '
-              # --- [[Page|Label]] → [Label]({{< relref "page.md" >}})
-              s{\[\[([^]|#]+)\|([^]]+)\]\]}{
-                my ($page, $label)=($1,$2);
-                $page=lc($page);
-                "[${label}]({{< relref \"${page}.md\" >}})"
-              }gex;
+            # [[Page]] → [Page]({{< relref \"page.md\" >}})
+            s{
+              \[\[([^]|#]+)\]\]
+            }{
+              my \$page=lc(\$1);
+              \"[\$1]({{< relref \\\"\$page.md\\\" >}})\"
+            }gex;
 
-              # --- [[Page#Section]] → [Section]({{< relref "page.md#section" >}})
-              s{\[\[([^]|#]+)\#([^\]]+)\]\]}{
-                my ($page,$anchor)=($1,$2);
-                $page=lc($page);
-                $anchor=lc($anchor);
-                $anchor=~s/[^a-z0-9 \-]//g;
-                $anchor=~s/ /-/g;
-                "[${anchor}]({{< relref \"${page}.md#${anchor}\" >}})"
-              }gex;
+            # [Label](guide.md#section) → [Label]({{< relref \"guide.md#section\" >}})
+            s{
+              \[([^]]+)\]\(([^)]+\.md#[^)]+)\)
+            }{
+              \"[\$1]({{< relref \\\"\$2\\\" >}})\"
+            }gex;
 
-              # --- [[Page]] → [Page]({{< relref "page.md" >}})
-              s{\[\[([^]|#]+)\]\]}{
-                my $page=lc($1);
-                "[${1}]({{< relref \"${page}.md\" >}})"
-              }gex;
-
-              # --- [Label](guide.md#section) → [Label]({{< relref "guide.md#section" >}})
-              s{\[([^]]+)\]\(([^)]+\.md#[^)]+)\)}{
-                "[$1]({{< relref \"$2\" >}})"
-              }gex;
-
-              # --- [Label](guide.md) → [Label]({{< relref "guide.md" >}})
-              s{\[([^]]+)\]\(([^)]+\.md)\)}{
-                "[$1]({{< relref \"$2\" >}})"
-              }gex;
-            ' "$file"
-          done
+            # [Label](guide.md) → [Label]({{< relref \"guide.md\" >}})
+            s{
+              \[([^]]+)\]\(([^)]+\.md)\)
+            }{
+              \"[\$1]({{< relref \\\"\$2\\\" >}})\"
+            }gex;
+          "
 
       - name: Setup Pages
         id: pages
