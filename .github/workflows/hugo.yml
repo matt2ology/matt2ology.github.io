@@ -49,17 +49,33 @@ jobs:
           submodules: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Update all submodules to their latest commit
+      - name: Update all submodules to their latest remote commits
         run: |
           git submodule sync --recursive
           git submodule update --init --recursive
 
-          echo "Fetching and updating all submodules to their latest remote commits..."
+          echo "Fetching and updating all submodules to their latest remote commits (fast-forward only)..."
           git submodule foreach --recursive '
             echo "----> Updating submodule: $name"
+
+            # Fetch the latest commits from origin
             git fetch origin
-            git checkout $(git rev-parse --abbrev-ref HEAD)
-            git pull origin $(git rev-parse --abbrev-ref HEAD)
+
+            # Try to detect the current branch; fall back to the remote's default branch
+            branch=$(git rev-parse --abbrev-ref HEAD)
+            if [ "$branch" = "HEAD" ] || [ -z "$branch" ]; then
+              branch=$(git remote show origin | sed -n "/HEAD branch/s/.*: //p")
+              [ -z "$branch" ] && branch="main"
+              echo "No active branch detected — using default branch: $branch"
+              git checkout "$branch" || git checkout -b "$branch" "origin/$branch"
+            fi
+
+            echo "Pulling latest changes for branch: $branch"
+            git pull --ff-only origin "$branch" || {
+              echo "⚠️ Fast-forward failed for $name, forcing sync to remote"
+              git fetch origin "$branch"
+              git reset --hard "origin/$branch"
+            }
           '
 
           echo "✅ Submodules updated to latest remote commits."
