@@ -49,21 +49,20 @@ jobs:
           submodules: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Update all submodules to their latest main branch
+      - name: Update all submodules to their latest commit
         run: |
           git submodule sync --recursive
           git submodule update --init --recursive
-          
-          echo "Updating each submodule to latest 'main' branch..."
+
+          echo "Fetching and updating all submodules to their latest remote commits..."
           git submodule foreach --recursive '
-            branch="main"
-            echo "Updating submodule $name on branch $branch"
-            git fetch origin $branch || exit 1
-            git checkout $branch || git checkout -b $branch origin/$branch
-            git pull origin $branch
+            echo "----> Updating submodule: $name"
+            git fetch origin
+            git checkout $(git rev-parse --abbrev-ref HEAD)
+            git pull origin $(git rev-parse --abbrev-ref HEAD)
           '
-          
-          echo "Submodule update complete."
+
+          echo "✅ Submodules updated to latest remote commits."
           git submodule status
 
       - name: Convert markdown links to Hugo shortcodes
