@@ -133,21 +133,27 @@ jobs:
               \]\]              # ]]
             }{
               my (\$path, \$anchor, \$text) = (\$1, \$2, \$3);
-
-              # Lowercase the anchor
+              
+              # Lowercase the entire anchor
               \$anchor = lc(\$anchor);
-
-              # Remove unwanted characters EXCEPT hyphens and spaces
-              \$anchor =~ s/[^a-z0-9 \-]//g;
-
-              # Replace each space with a hyphen (important: preserves multiple hyphens)
-              \$anchor =~ s/ /-/g;
-
-              # If the path doesn't already end with .md, append it
-              \$path .= '.md' unless \$path =~ /\.md\$/;
-
-              # Final output
-              \"[\$text]({{< relref \\\"\$path#\$anchor\\\" >}})\"
+              
+              # Transform to Hugo-style anchor ID (more accurate simulation)
+              # Replace spaces and special characters with hyphens
+              \$anchor =~ s/[^a-z0-9]+/-/g;
+              # Remove leading/trailing hyphens
+              \$anchor =~ s/^-+//;
+              \$anchor =~ s/-+$//;
+              
+              # Ensure .md extension on path
+              unless (\$path =~ /\.md\$/i) {
+                \$path .= '.md';
+              }
+              
+              # Remove .md from the beginning of the path if using relref
+              \$path =~ s/^\.md//;
+              
+              # Output Hugo shortcode format - single line, no extra spaces
+              \"{{\< relref \\\"\$path#\$anchor\\\" \>}}\"
             }gex
           "
 
