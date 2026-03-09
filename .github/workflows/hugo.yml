@@ -49,44 +49,6 @@ jobs:
           submodules: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Replace wiki-style links with Hugo relref
-        run: |
-          find . -name "*.md" -print0 |
-          xargs -0 perl -pi -e "
-            s{
-              \[\[              # [[
-              (.+?)             # group 1: path
-              \#                # #
-              (.+?)             # group 2: anchor text
-              \|                # |
-              (.+?)             # group 3: label
-              \]\]              # ]]
-            }{
-              my (\$path, \$anchor, \$text) = (\$1, \$2, \$3);
-              
-              # Lowercase the entire anchor
-              \$anchor = lc(\$anchor);
-              
-              # Transform to Hugo-style anchor ID (more accurate simulation)
-              # Replace spaces and special characters with hyphens
-              \$anchor =~ s/[^a-z0-9]+/-/g;
-              # Remove leading/trailing hyphens
-              \$anchor =~ s/^-+//;
-              \$anchor =~ s/-+$//;
-              
-              # Ensure .md extension on path
-              unless (\$path =~ /\.md\$/i) {
-                \$path .= '.md';
-              }
-              
-              # Remove .md from the beginning of the path if using relref
-              \$path =~ s/^\.md//;
-              
-              # Output Hugo shortcode format - single line, no extra spaces
-              \"{{\< relref \\\"\$path#\$anchor\\\" \>}}\"
-            }gex
-          "
-
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
