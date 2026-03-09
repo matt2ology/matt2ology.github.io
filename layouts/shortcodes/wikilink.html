@@ -1,0 +1,19 @@
+{{ $raw := .Get 0 }}
+
+{{ $parts := split $raw "#" }}
+{{ $pageName := index $parts 0 }}
+{{ $anchor := "" }}
+
+{{ if gt (len $parts) 1 }}
+  {{ $anchor = index $parts 1 | lower | replaceRE "[^a-z0-9]+" "-" | replaceRE "^-|-$" "" }}
+{{ end }}
+
+{{ $page := site.GetPage (printf "%s.md" $pageName) }}
+
+{{ if $page }}
+  <a href="{{ $page.RelPermalink }}{{ with $anchor }}#{{ . }}{{ end }}">
+    {{ $page.Title }}
+  </a>
+{{ else }}
+  <span class="broken-link">{{ $pageName }}</span>
+{{ end }}
