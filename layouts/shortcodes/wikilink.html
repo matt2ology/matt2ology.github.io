@@ -1,19 +1,39 @@
 {{ $raw := .Get 0 }}
 
-{{ $parts := split $raw "#" }}
-{{ $pageName := index $parts 0 }}
-{{ $anchor := "" }}
+{{/* Split alias */}}
+{{ $aliasParts := split $raw "|" }}
+{{ $target := index $aliasParts 0 }}
+{{ $label := "" }}
 
-{{ if gt (len $parts) 1 }}
-  {{ $anchor = index $parts 1 | lower | replaceRE "[^a-z0-9]+" "-" | replaceRE "^-|-$" "" }}
+{{ if gt (len $aliasParts) 1 }}
+  {{ $label = index $aliasParts 1 }}
 {{ end }}
 
-{{ $page := site.GetPage (printf "%s.md" $pageName) }}
+{{/* Split anchor */}}
+{{ $targetParts := split $target "#" }}
+{{ $path := index $targetParts 0 }}
+{{ $anchor := "" }}
+
+{{ if gt (len $targetParts) 1 }}
+  {{ $anchor = index $targetParts 1 }}
+{{ end }}
+
+{{/* Normalize path */}}
+{{ $path = strings.TrimSuffix ".md" $path }}
+
+{{/* Resolve page relative to site */}}
+{{ $page := site.GetPage $path }}
+
+{{/* Generate anchor same way Hugo does */}}
+{{ $anchorID := "" }}
+{{ if $anchor }}
+  {{ $anchorID = $anchor | lower | replaceRE "[^a-z0-9]+" "-" | replaceRE "^-|-$" "" }}
+{{ end }}
 
 {{ if $page }}
-  <a href="{{ $page.RelPermalink }}{{ with $anchor }}#{{ . }}{{ end }}">
-    {{ $page.Title }}
+  <a href="{{ $page.RelPermalink }}{{ with $anchorID }}#{{ . }}{{ end }}">
+    {{ if $label }}{{ $label }}{{ else }}{{ $page.Title }}{{ end }}
   </a>
 {{ else }}
-  <span class="broken-link">{{ $pageName }}</span>
+  <span class="broken-link">{{ if $label }}{{ $label }}{{ else }}{{ $path }}{{ end }}</span>
 {{ end }}
