@@ -1,0 +1,20 @@
+{{ $current := .File.Path }}
+
+{{ $backlinks := slice }}
+
+{{ range site.RegularPages }}
+  {{ if and (ne .File.Path $current) (in .RawContent $current) }}
+    {{ $backlinks = $backlinks | append . }}
+  {{ end }}
+{{ end }}
+
+{{ if gt (len $backlinks) 0 }}
+<h3>Backlinks</h3>
+<ul>
+  {{ range $backlinks }}
+    <li>
+      <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+    </li>
+  {{ end }}
+</ul>
+{{ end }}
