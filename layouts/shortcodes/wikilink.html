@@ -22,7 +22,7 @@
 {{ $path = strings.TrimSuffix ".md" $path }}
 
 {{/* Resolve page relative to site */}}
-{{ $page := site.GetPage $path }}
+{{ $page := .Page.GetPage $path }}
 
 {{/* Generate anchor same way Hugo does */}}
 {{ $anchorID := "" }}
