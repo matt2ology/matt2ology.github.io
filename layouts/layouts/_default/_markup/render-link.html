@@ -1,0 +1,12 @@
+{{ $dest := .Destination }}
+
+{{ if strings.HasSuffix $dest ".md" }}
+  {{ $page := site.GetPage $dest }}
+  {{ if $page }}
+    <a href="{{ $page.RelPermalink }}">{{ .Text }}</a>
+  {{ else }}
+    <a href="{{ $dest }}">{{ .Text }}</a>
+  {{ end }}
+{{ else }}
+  <a href="{{ $dest }}">{{ .Text }}</a>
+{{ end }}

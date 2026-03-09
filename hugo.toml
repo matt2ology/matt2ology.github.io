@@ -4,3 +4,8 @@ title = 'matt2ology Tech Journal and Blog'
 theme = 'hugo-theme-stack'
 mainSections = [ 'atomic', 'blog', 'literature', 'Readwise', 'references' ]
 ignoreFiles = ["content/templates/.*"]
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
