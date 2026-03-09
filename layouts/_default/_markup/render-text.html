@@ -1,5 +1,5 @@
 {{ $text := .Text }}
 
-{{ $pattern := `\[\[([^\]]+)\]\]` }}
+{{ $pattern := `\[\[(.*?)\]\]` }}
 
-{{ $text | replaceRE $pattern `{{< wikilink "$1" >}}` | safeHTML }}
+{{ $text | replaceRE $pattern (printf `<a href="/$1">$1</a>`) | safeHTML }}
