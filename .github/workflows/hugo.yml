@@ -27,7 +27,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
         with:
-          submodules: true
+          submodules: recursive
+
+      - name: Update submodules to latest
+        run: git submodule update --init --remote --recursive
 
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
