@@ -38,6 +38,9 @@ jobs:
           git commit -m "Auto-update submodule to latest commit" || echo "No changes"
           git push
 
+      - name: Convert Obsidian links
+        run: python content/templates/scripts/convert_wikilinks.py
+
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
         with:
