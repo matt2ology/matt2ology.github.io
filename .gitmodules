@@ -5,6 +5,3 @@
 [submodule "themes/hugo-theme-stack"]
 	path = themes/hugo-theme-stack
 	url = https://github.com/matt2ology/hugo-theme-stack.git
-[submodule "themes/stack-theme-stack-v4-0-0-beta-14"]
-	path = themes/stack-theme-stack-v4-0-0-beta-14
-	url = https://github.com/CaiJimmy/hugo-theme-stack.git
