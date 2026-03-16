@@ -30,7 +30,13 @@ jobs:
           submodules: recursive
 
       - name: Update submodules to latest
-        run: git submodule update --init --remote --recursive
+        run: |
+          git submodule update --init --remote --recursive
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add .
+          git commit -m "Auto-update submodules" || echo "No changes"
+          git push
 
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
