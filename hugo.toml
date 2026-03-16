@@ -2,7 +2,7 @@ baseURL = 'https://matt2ology.github.io/'
 languageCode = 'en-us'
 title = 'matt2ology Tech Journal and Blog'
 theme = 'hugo-theme-stack'
-mainSections = [ 'atomic', 'blog', 'literature', 'Readwise', 'references' ]
+mainSections = [ 'atomic', 'blog', 'literature', 'highlights' ]
 ignoreFiles = ["content/templates/.*"]
 
 [markup]
