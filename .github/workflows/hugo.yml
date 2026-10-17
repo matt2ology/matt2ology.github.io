@@ -41,10 +41,10 @@ jobs:
           git push
 
       - name: Convert Obsidian links
-        run: python content/templates/scripts/convert_wikilinks.py
+        run: python content/scripts/convert_obsidian_image_wikilinks.py
 
       - name: Convert Image links
-        run: python content/templates/scripts/convert_obsidian_image_wikilinks.py
+        run: python content/scripts/convert_obsidian_image_wikilinks.py
 
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3.2.1
