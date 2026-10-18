@@ -41,7 +41,7 @@ jobs:
           git push
 
       - name: Convert Obsidian links
-        run: python content/scripts/convert_obsidian_image_wikilinks.py
+        run: python content/scripts/convert_links.py
 
       - name: Convert Image links
         run: python content/scripts/convert_obsidian_image_wikilinks.py
