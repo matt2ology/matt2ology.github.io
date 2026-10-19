@@ -3,3 +3,5 @@ locale = 'en-us'
 title = 'matt2ology Tech Journal and Blog'
 theme = 'hugo-theme-stack'
 ignoreFiles = ["content/_quickadd/.*", "content/scripts/*", "content/templates/.*", "content/journal/*", "content/contacts/*" , "content/notes/*" ]
+refLinksErrorLevel = "warning"
+refLinksNotFoundURL = "/coming-soon/"
