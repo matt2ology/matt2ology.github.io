@@ -2,6 +2,6 @@ baseURL = 'https://matt2ology.github.io/'
 locale = 'en-us'
 title = 'matt2ology Tech Journal and Blog'
 theme = 'hugo-theme-stack'
-ignoreFiles = ["content/_quickadd/.*", "content/scripts/*", "content/templates/.*", "content/journal/*", "content/contacts/*" , "content/notes/*" ]
+ignoreFiles = ["content/_quickadd-scripts/.*", "content/scripts/*", "content/templates/.*", "content/journal/*", "content/contacts/*"]
 refLinksErrorLevel = "warning"
 refLinksNotFoundURL = "/coming-soon/"
