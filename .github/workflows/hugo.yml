@@ -46,6 +46,9 @@ jobs:
       - name: Convert Image links
         run: python content/scripts/convert_obsidian_image_wikilinks.py
 
+      - name: Convert Obsidian highlights
+        run: python content/scripts/convert_highlights.py
+
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3.2.1
         with:
