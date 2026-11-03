@@ -37,17 +37,19 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
-          git commit -m "Auto-update submodule to latest commit" || echo "No changes"
+          git commit -m "Auto-update submodule to latest commit [skip ci]" || echo "No changes"
           git push
 
-      - name: Convert Obsidian links
-        run: python content/scripts/convert_links.py
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-      - name: Convert Image links
-        run: python content/scripts/convert_obsidian_image_wikilinks.py
-
-      - name: Convert Obsidian highlights
-        run: python content/scripts/convert_highlights.py
+      - name: Run Markdown Content Converters
+        run: |
+          python content/scripts/convert_links.py
+          python content/scripts/convert_obsidian_image_wikilinks.py
+          python content/scripts/convert_highlights.py
 
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3.2.1
